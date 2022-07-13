@@ -4,6 +4,8 @@ from time import sleep
 from scraper import check_for_article
 from webhook import send_new_article_alert, send_listing_alert
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+
 def save_latest_article(article_number):
     myFile = open('latest_article.csv', 'w', newline='')
     with myFile:
@@ -26,12 +28,16 @@ def main():
             if not("no article!" in title):
                 if content != '':
                     send_listing_alert(title, content, link)
+                    logging.info('NEW LISTING ALERT!')
                 else:
                     send_new_article_alert(title, link)
+                    logging.info('NEW ARTICLE ALERT!')
                 article_number += 1
                 save_latest_article([article_number])
-            logging.info('Article not found - checking again in 60 seconds')
-            sleep(60)
+                sleep(5)
+            else:
+                logging.info('Article not found - checking again in 60 seconds')
+                sleep(60)
         except TypeError as err:
             logging.error(f'Error checking for articles: {err}')
         
