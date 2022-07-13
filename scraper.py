@@ -12,7 +12,7 @@ def check_for_article(article_number):
     options.add_argument("--start-minimized")
     driver = webdriver.Chrome(options=options)
     driver.get(article_link)
-    sleep(2)
+    sleep(3)
 
     try:
         #detect wether article has been posted already

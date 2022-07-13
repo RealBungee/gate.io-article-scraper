@@ -21,14 +21,18 @@ def load_latest_article():
 def main():
     article_number = int(load_latest_article())
     while(True):
-        title, link, content = check_for_article(article_number)
-        if not("no article!" in title):
-            if content != '':
-                send_listing_alert(title, content, link)
-            else:
-                send_new_article_alert(title, link)
-            article_number += 1
-            save_latest_article([article_number])
-        logging.info('Article not found - checking again in 60 seconds')
-        sleep(60)
+        try:
+            title, link, content = check_for_article(article_number)
+            if not("no article!" in title):
+                if content != '':
+                    send_listing_alert(title, content, link)
+                else:
+                    send_new_article_alert(title, link)
+                article_number += 1
+                save_latest_article([article_number])
+            logging.info('Article not found - checking again in 60 seconds')
+            sleep(60)
+        except TypeError as err:
+            logging.error(f'Error checking for articles: {err}')
+        
 main()
