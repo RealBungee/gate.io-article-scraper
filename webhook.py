@@ -1,8 +1,11 @@
 from discord_webhook import DiscordWebhook
 
-def send_listing_alert(title, time, link):
+def send_listing_alert(title, time, link, markets):
+    exchanges = '| '
+    for m in markets:
+        exchanges += m + ' | '
     webhook_url  =  'https://discord.com/api/webhooks/996078318384320653/3BWf0odCbyl3VGhQ3keLU73L7plpxuoAjkk5pvU43nb4KeZmHZgGgmSguzP7A7aSq-vy'
-    content  = f'@everyone\n{title}\n{time}\nLink to article: {link}'
+    content  = f'@everyone\n{title}\n{time}\nAlready listed on: {exchanges}\nLink to article: {link}'
     webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
     webhook.execute()
 
