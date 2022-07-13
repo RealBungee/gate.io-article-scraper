@@ -3,7 +3,7 @@ import logging
 from time import sleep
 from scraper import check_for_article
 from webhook import send_new_article_alert, send_listing_alert
-from coingecko import get_get_coin_markets
+from coingecko import get_all_futures_coins, get_coin_markets
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
@@ -36,7 +36,7 @@ def main():
             title, link, content = check_for_article(article_number)
             if not("no article!" in title):
                 if content != '':
-                    markets = get_get_coin_markets(get_coin(title))
+                    markets = get_coin_markets(get_coin(title))
                     send_listing_alert(title, content, link, markets)
                     logging.info('NEW LISTING ALERT!')
                 else:
@@ -50,5 +50,5 @@ def main():
                 sleep(60)
         except TypeError as err:
             logging.error(f'Error checking for articles: {err}')
-        
+            
 main()
