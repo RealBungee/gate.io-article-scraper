@@ -10,6 +10,9 @@ def check_for_article(article_number):
     article_link = f'https://www.gate.io/article/{article_number}'
     options = webdriver.ChromeOptions()
     options.add_argument("--start-minimized")
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])
+    
+    #start the chrome driver (open browser)
     driver = webdriver.Chrome(options=options)
     driver.get(article_link)
     sleep(3)
