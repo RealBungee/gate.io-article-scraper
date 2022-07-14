@@ -25,9 +25,5 @@ def get_all_futures_coins(exchange):
         return 'No markets available'
     tickers = []
     for t in res['tickers']:
-        tickers.append({t['trade_url'], t['symbol']})
-    
-    # We can save this and keep comparing it to the old number to check for new listings
-    print(len(tickers))
-
+        tickers.append(frozenset({t['trade_url'], t['symbol']}))
     return tickers

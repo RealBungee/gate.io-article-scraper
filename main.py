@@ -2,8 +2,9 @@ import csv
 import logging
 from time import sleep
 from scraper import check_for_article
+from storageMethods import check_listing_updates
 from webhook import send_new_article_alert, send_listing_alert
-from coingecko import get_all_futures_coins, get_coin_markets
+from coingecko import get_coin_markets
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
@@ -50,5 +51,11 @@ def main():
                 sleep(60)
         except TypeError as err:
             logging.error(f'Error checking for articles: {err}')
-            
+
+    # while(True):
+    #     try:
+    #        check_listing_updates("binance_futures")
+    #         sleep(60)
+    #     except TypeError as err:
+    #         logging.error(f'Error checking for listings: {err}')
 main()

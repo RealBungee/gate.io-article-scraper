@@ -1,0 +1,49 @@
+import pickle
+from coingecko import get_all_futures_coins
+from webhook import send_perp_listing_alert, send_perp_delisting_alert
+
+# Saves list of tokens on exchange to ./ListingsData
+# e.g save_object(list, "binance_futures")
+def save_object(obj, exchangeName):
+    try:
+        with open("./ListingsData/" + exchangeName + ".pickle", "wb") as f:
+            pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
+    except Exception as ex:
+        print("Error during pickling object (Possibly unsupported):", ex)
+
+# Loads a stored list of tokens from ./ListingsData
+# e.g load_object("binance_futures")
+def load_object(filename):
+    try:
+        with open("./ListingsData/" + filename, "rb") as f:
+            return pickle.load(f)
+    except Exception as ex:
+        print("Error during unpickling object (Possibly unsupported):", ex)
+
+# Compares the list of stored token listings to current listings then updates
+# e.g check_listing_updates("binance_futures")
+def check_listing_updates(exchange):
+    try:
+        storedListings = load_object(exchange + ".pickle")
+        currentListings = get_all_futures_coins(exchange)
+        print(len(storedListings))
+        print(len(currentListings))
+        # Compare
+        removedListing = set(storedListings).difference(currentListings)
+        addedListing = set(currentListings).difference(storedListings)
+        
+        # Update stored list 
+        if len(removedListing) > 0:
+            # Alert for delist
+            for token in removedListing:
+                send_perp_delisting_alert(list(token)[0], list(token)[1])
+            save_object(currentListings, exchange)
+        if len(addedListing) > 0:
+            # Alert for listing
+            for token in addedListing:
+                send_perp_listing_alert(list(token)[0], list(token)[1])
+            save_object(currentListings, exchange)
+        
+        print("Successful")
+    except Exception as ex:
+        print("Error during listing update:", ex)

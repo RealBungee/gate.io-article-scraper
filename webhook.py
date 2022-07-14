@@ -14,3 +14,15 @@ def send_new_article_alert(title, link):
     content = f'New Article Released on Gate.io: {title}\nLink to article: {link}'
     webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
     webhook.execute()
+
+def send_perp_listing_alert(title, link):
+    webhook_url = 'https://discord.com/api/webhooks/996096673296158802/YoCKtBCgzJiVMzJvW6Og481jRM9rClcsPJdmBTz0ZOhL2U3oDnnAqRwfUwleV4MuFREJ'
+    content = f'New Perpetual Listing on Binance: {title}\nLink to listing: {link}'
+    webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
+    webhook.execute()
+
+def send_perp_delisting_alert(title, link):
+    webhook_url = 'https://discord.com/api/webhooks/996096673296158802/YoCKtBCgzJiVMzJvW6Og481jRM9rClcsPJdmBTz0ZOhL2U3oDnnAqRwfUwleV4MuFREJ'
+    content = f'New Perpetual Delisting on Binance: {title}\nLink to listing: {link}'
+    webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
+    webhook.execute()
