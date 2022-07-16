@@ -1,6 +1,7 @@
 import csv
 import logging
 import pickle
+import os
 from coingecko import get_all_futures_coins
 from webhook import send_perp_listing_alert, send_perp_delisting_alert
 
@@ -24,7 +25,7 @@ def load_latest_article():
 # e.g save_object(list, "binance_futures")
 def save_object(obj, exchangeName):
     try:
-        with open("./ListingsData/" + exchangeName + ".pickle", "wb") as f:
+        with open("../ListingsData/" + exchangeName + ".pickle", "wb") as f:
             pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
     except Exception as ex:
         logging.error(f'Error during pickling object (Possibly unsupported): {ex}')
@@ -33,39 +34,52 @@ def save_object(obj, exchangeName):
 # e.g load_object("binance_futures")
 def load_object(filename):
     try:
-        with open("./ListingsData/" + filename, "rb") as f:
+        with open("../ListingsData/" + filename, "rb") as f:
             return pickle.load(f)
     except Exception as ex:
         logging.error(f'Error during unpickling object (Possibly unsupported): {ex}')
 
 # Compares the list of stored token listings to current listings then updates
-# e.g check_listing_updates("binance_futures")
-def check_listing_updates(exchange):
+def update_futures_listings():
     try:
-        storedListings = load_object(exchange + ".pickle")
-        currentListings = get_all_futures_coins(exchange)
-        logging.info(f'Stored listings: {len(storedListings)}')
-        logging.info(f'Current listings: {len(currentListings)}')
-
-        # Compare
-        removedListing = set(storedListings).difference(currentListings)
-        addedListing = set(currentListings).difference(storedListings)
-        
-        # Update stored list 
-        if len(removedListing) == 0 and len(addedListing) == 0: 
-            logging.info(f'No perpetual updates!')
-
-        if len(removedListing) > 0:
-            # Alert for delist
-            for token in removedListing:
-                send_perp_delisting_alert(list(token)[0], list(token)[1])
-                logging.info(f'Delisting alert!')
-            save_object(currentListings, exchange)
-        if len(addedListing) > 0:
-            # Alert for listing
-            for token in addedListing:
-                send_perp_listing_alert(list(token)[0], list(token)[1])
-                logging.info(f'Listing alert!')
-            save_object(currentListings, exchange)
+        # Create listing file if it doesn't exist
+        if not os.path.isfile("./ListingsData/futuresListings.pickle"):
+            create_futures_listing_file()
+        # load saved exchange data
+        exchanges = load_object("futuresListings.pickle")
+        removedListing = 0
+        addedListing = 0
+        # loop through each exchange and check for listings
+        for item in exchanges:
+            currentListings = get_all_futures_coins(item[0][1])
+            
+            # Compare
+            removedListing = [i for i in currentListings[0][2] if i not in item[0][2]]
+            addedListing = [i for i in item[0][2] if i not in currentListings[0][2]]
+            
+            # Check for delist
+            if len(removedListing) > 0:
+                send_perp_delisting_alert(item[0][0], removedListing[0][0], removedListing[0][1])
+                save_object(currentListings, "futuresListings")
+            # Check for listing
+            if len(addedListing) > 0:
+                send_perp_listing_alert(item[0][0], removedListing[0][0], removedListing[0][1])
+                save_object(currentListings, "futuresListings")
+        if ((len(addedListing) + len(removedListing)) == 0):
+            print("No futures listings or delistings found - retrying in 60 seconds")
     except Exception as ex:
-        logging.error(f'Error during listing update: {ex}')
+        print("Error during listing update:", ex)
+ 
+# Create data file from selected exchanges in exchangList array
+def create_futures_listing_file():
+    # All wanted exchanges
+    exchangesList = ["binance_futures", "ftx", "okex_swap",
+     "mxc_futures", "gate_futures", "kumex",
+     "bitmex", "huobi_dm", "kraken_futures"]
+    
+    listings = []
+    
+    for exchange in exchangesList:
+        listings.append(get_all_futures_coins(exchange)) 
+    
+    save_object(listings, "futuresListings")
