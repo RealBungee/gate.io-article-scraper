@@ -9,6 +9,7 @@ from webhook import send_new_article_alert, send_listing_alert
 from storageMethods import check_listing_updates, save_latest_article, load_latest_article
 
 def scrape_gate_articles():
+    print('Just testing Github changes webhook')
     logging.info('Gate.io scraper thread started')
     article_number = int(load_latest_article())
     while(True):
