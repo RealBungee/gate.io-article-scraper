@@ -3,34 +3,48 @@ import threading
 from time import sleep
 from text_processing import get_coin_from_listing_title
 from text_processing import get_coin_from_listing_title
-from scraper import check_for_article
+from scraper import scrape_gateio_article, scrape_mexc_article
 from coingecko import get_coin_markets
-from webhook import send_new_article_alert, send_listing_alert
+from webhook import send_gateio_article_alert, send_gateio_listing_alert, send_mexc_listing_alert
 from storageMethods import check_listing_updates, save_latest_article, load_latest_article
 
-def scrape_gate_articles():
-    print('Just testing Github changes webhook')
-    logging.info('Gate.io scraper thread started')
+def mexc():
+    logging.info('Mexc scraper started')
+    recent_articles = scrape_mexc_article(extended=True)
+    logging.info('Successfully loaded most recent Mexc listings')
+    while(True):
+        article, url = scrape_mexc_article()
+        if article not in recent_articles:
+            send_mexc_listing_alert(article, url)
+            recent_articles.insert(0, article)
+            recent_articles.pop(len(recent_articles)-1)
+            logging.info('NEW LISTING ALERT')
+        else:
+            logging.info('No new listing announcements found - retrying in 30 seconds')
+        sleep(30)
+
+def gateio():
+    logging.info('Gate.io scraper started')
     article_number = int(load_latest_article())
     while(True):
         try:
-            title, link, content = check_for_article(article_number)
+            title, link, content = scrape_gateio_article(article_number)
         except TypeError as err:
             logging.error(f'Error checking for articles: {err}')
         
         if not("no article!" in title):
             if content != '':
                 markets = get_coin_markets(get_coin_from_listing_title(title))
-                send_listing_alert(title, content, link, markets)
+                send_gateio_listing_alert(title, content, link, markets)
                 logging.info('NEW LISTING ALERT!')
             else:
-                send_new_article_alert(title, link)
+                send_gateio_article_alert(title, link)
                 logging.info('NEW ARTICLE ALERT!')
             article_number += 1
             save_latest_article([article_number])
             sleep(5)
         else:
-            logging.info('Article not found - checking again in 60 seconds')
+            logging.info('No new listing announcements found - retrying in 60 seconds')
             sleep(60)
 
 def check_for_futures_updates():
@@ -46,14 +60,16 @@ def check_for_futures_updates():
 
 
 def main():
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(threadName)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
     
     logging.info('Creating threads')
-    gate = threading.Thread(target=scrape_gate_articles)
-    futures = threading.Thread(target=check_for_futures_updates)
+    g = threading.Thread(target=gateio)
+    m = threading.Thread(target=mexc)
+    #futures = threading.Thread(target=check_for_futures_updates)
 
     logging.info('Starting threads')
-    gate.start()
-    futures.start()
+    g.start()
+    m.start()
+    #futures.start()
     
 main()

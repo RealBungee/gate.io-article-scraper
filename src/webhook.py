@@ -1,6 +1,6 @@
 from discord_webhook import DiscordWebhook
 
-def send_listing_alert(title, time, link, markets):
+def send_gateio_listing_alert(title, time, link, markets):
     exchanges = '| '
     for m in markets:
         exchanges += m + ' | '
@@ -9,11 +9,23 @@ def send_listing_alert(title, time, link, markets):
     webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
     webhook.execute()
 
-def send_new_article_alert(title, link):
+def send_gateio_article_alert(title, link):
     webhook_url = 'https://discord.com/api/webhooks/996096673296158802/YoCKtBCgzJiVMzJvW6Og481jRM9rClcsPJdmBTz0ZOhL2U3oDnnAqRwfUwleV4MuFREJ'
     content = f'New Article Released on Gate.io: {title}\nLink to article: {link}'
     webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
     webhook.execute()
+
+def send_mexc_listing_alert(title, url):
+    webhook_url  =  'https://discord.com/api/webhooks/997948193109180457/cbBoLzixK63soVzxIXFJjK3UIv602COz4LkcJ5Av8WRAlxdwrs6mYgcXeYVAJrjYnq9S'
+    content  = f'{title}\n{url}'
+    webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
+    webhook.execute()
+
+def send_mexc_article_alert(title, link):
+    webhook_url = 'https://discord.com/api/webhooks/996096673296158802/YoCKtBCgzJiVMzJvW6Og481jRM9rClcsPJdmBTz0ZOhL2U3oDnnAqRwfUwleV4MuFREJ'
+    content = f'New Article Released on Gate.io: {title}\nLink to article: {link}'
+    webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
+    webhook.execute()    
 
 def send_perp_listing_alert(title, link):
     webhook_url = 'https://discord.com/api/webhooks/997498164640743546/4OUHRWpJaqtvpCJLJTvJLc5kIfxquatQlhjwhUZrXeifwwCJr1slqUYq2b-rIwoF-JLK'

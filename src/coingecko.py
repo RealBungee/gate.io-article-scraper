@@ -25,5 +25,5 @@ def get_all_futures_coins(exchange):
         return 'No markets available'
     tickers = []
     for t in res['tickers']:
-        tickers.append(frozenset({t['trade_url'], t['symbol']}))
+        tickers.append(t['trade_url'], t['symbol'])
     return tickers
