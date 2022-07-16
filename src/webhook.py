@@ -27,14 +27,14 @@ def send_mexc_article_alert(title, link):
     webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
     webhook.execute()    
 
-def send_perp_listing_alert(title, link):
+def send_perp_listing_alert(title, link, token):
     webhook_url = 'https://discord.com/api/webhooks/997498164640743546/4OUHRWpJaqtvpCJLJTvJLc5kIfxquatQlhjwhUZrXeifwwCJr1slqUYq2b-rIwoF-JLK'
-    content = f'New Perpetual Listing on Binance: {title}\nLink to listing: {link}'
+    content = f'New Perpetual Listing on {title}: {token}\nLink to listing: {link}'
     webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
     webhook.execute()
 
-def send_perp_delisting_alert(title, link):
+def send_perp_delisting_alert(title, link, token):
     webhook_url = 'https://discord.com/api/webhooks/997498927286857779/iS0jq0o3stxb5MPsqi6lCQj4qE9nsjY_yT9x9ZZjgsAbYTAvFiFTYAmL2HVgY-USCFx6'
-    content = f'New Perpetual Delisting on Binance: {title}\nLink to listing: {link}'
+    content = f'New Perpetual Delisting on {title}: {token}\nLink to listing: {link}'
     webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
     webhook.execute()

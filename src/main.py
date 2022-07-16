@@ -6,7 +6,7 @@ from text_processing import get_coin_from_listing_title
 from scraper import scrape_gateio_article, scrape_mexc_article
 from coingecko import get_coin_markets
 from webhook import send_gateio_article_alert, send_gateio_listing_alert, send_mexc_listing_alert
-from storageMethods import check_listing_updates, save_latest_article, load_latest_article
+from storageMethods import update_futures_listings, save_latest_article, load_latest_article
 
 def mexc():
     logging.info('Mexc scraper started')
@@ -53,7 +53,7 @@ def check_for_futures_updates():
         try:
             logging.info('-----------------------------')
             logging.info('Checking for futures updates')
-            check_listing_updates("binance_futures")
+            update_futures_listings()
             sleep(60)
         except TypeError as err:
             logging.error(f'Error checking for listings: {err}')
