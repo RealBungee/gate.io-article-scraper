@@ -1,8 +1,7 @@
 import logging
 import threading
 from time import sleep
-from text_processing import get_coin_from_listing_title
-from text_processing import get_coin_from_listing_title
+from text_processing import concat_markets, get_coin_from_listing_title
 from scraper import scrape_gateio_article, scrape_mexc_article
 from coingecko import get_coin_markets
 from webhook import send_gateio_article_alert, send_gateio_listing_alert, send_mexc_listing_alert
@@ -15,7 +14,9 @@ def mexc():
     while(True):
         article, url = scrape_mexc_article()
         if article not in recent_articles:
-            send_mexc_listing_alert(article, url)
+            markets = get_coin_markets(get_coin_from_listing_title(article))
+            exchanges = concat_markets(markets)
+            send_mexc_listing_alert(article, url, exchanges)
             recent_articles.insert(0, article)
             recent_articles.pop(len(recent_articles)-1)
             logging.info('NEW LISTING ALERT')
@@ -35,7 +36,8 @@ def gateio():
         if not("no article!" in title):
             if content != '':
                 markets = get_coin_markets(get_coin_from_listing_title(title))
-                send_gateio_listing_alert(title, content, link, markets)
+                exchanges = concat_markets(markets)
+                send_gateio_listing_alert(title, content, link, exchanges)
                 logging.info('NEW LISTING ALERT!')
             else:
                 send_gateio_article_alert(title, link)

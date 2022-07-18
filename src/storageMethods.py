@@ -66,9 +66,9 @@ def update_futures_listings():
                 send_perp_listing_alert(item[0][0], removedListing[0][0], removedListing[0][1])
                 save_object(currentListings, "futuresListings")
         if ((len(addedListing) + len(removedListing)) == 0):
-            print("No futures listings or delistings found - retrying in 60 seconds")
+            logging.info("No futures listings or delistings found - retrying in 60 seconds")
     except Exception as ex:
-        print("Error during listing update:", ex)
+        logging.exception("Error during listing update:", ex)
  
 # Create data file from selected exchanges in exchangList array
 def create_futures_listing_file():
