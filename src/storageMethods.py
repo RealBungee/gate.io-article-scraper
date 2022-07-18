@@ -34,7 +34,7 @@ def save_object(obj, exchangeName):
 # e.g load_object("binance_futures")
 def load_object(filename):
     try:
-        with open("../ListingsData/" + filename, "rb") as f:
+        with open("./ListingsData/" + filename, "rb") as f:
             return pickle.load(f)
     except Exception as ex:
         logging.error(f'Error during unpickling object (Possibly unsupported): {ex}')

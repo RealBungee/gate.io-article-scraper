@@ -65,11 +65,11 @@ def main():
     logging.info('Creating threads')
     g = threading.Thread(target=gateio)
     m = threading.Thread(target=mexc)
-    #futures = threading.Thread(target=check_for_futures_updates)
+    futures = threading.Thread(target=check_for_futures_updates)
 
     logging.info('Starting threads')
     g.start()
     m.start()
-    #futures.start()
+    futures.start()
     
 main()
