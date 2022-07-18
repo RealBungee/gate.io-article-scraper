@@ -32,8 +32,7 @@ def scrape_gateio_article(article_number):
         logging.warning('Element containing "not permitted!" not found')
 
     try:
-        article_title = driver.find_element(By.CLASS_NAME, 'dtl-title')
-        title = article_title.find_element(By.XPATH, '//h1').text
+        title = driver.find_element(By.XPATH, '/html[1]/body[1]/div[1]/div[1]/div[3]/div[1]/div[1]/h1[1]').text
         if 'Gate.io will list' in title:
             curr_year = str(date.today().year)
             main_content = driver.find_element(By.CLASS_NAME, 'dtl-content')
