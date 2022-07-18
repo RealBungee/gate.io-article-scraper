@@ -10,12 +10,10 @@ from storageMethods import update_futures_listings, save_latest_article, load_la
 def mexc():
     logging.info('Mexc scraper started')
     recent_articles = scrape_mexc_article(extended=True)
-    logging.info('Successfully loaded most recent Mexc listings')
     while(True):
         article, url = scrape_mexc_article()
         if article not in recent_articles:
-            markets = get_coin_markets(get_coin_from_listing_title(article))
-            exchanges = concat_markets(markets)
+            exchanges = concat_markets(get_coin_markets(get_coin_from_listing_title(article)))
             send_mexc_listing_alert(article, url, exchanges)
             recent_articles.insert(0, article)
             recent_articles.pop(len(recent_articles)-1)
@@ -35,8 +33,7 @@ def gateio():
         
         if not("no article!" in title):
             if content != '':
-                markets = get_coin_markets(get_coin_from_listing_title(title))
-                exchanges = concat_markets(markets)
+                exchanges = concat_markets(get_coin_markets(get_coin_from_listing_title(title)))
                 send_gateio_listing_alert(title, content, link, exchanges)
                 logging.info('NEW LISTING ALERT!')
             else:
