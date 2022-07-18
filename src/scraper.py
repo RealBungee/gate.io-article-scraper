@@ -1,6 +1,7 @@
 import logging
 from time import sleep
 from datetime import date
+from text_processing import get_coin_from_listing_title
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
@@ -37,6 +38,13 @@ def scrape_gateio_article(article_number):
             curr_year = str(date.today().year)
             main_content = driver.find_element(By.CLASS_NAME, 'dtl-content')
             content = main_content.text.split(curr_year)
+            content = content[0]
+            return title, article_link, content
+
+        if 'Initial Sale Result & Listing Schedule' in title:
+            coin = get_coin_from_listing_title(title).upper()
+            main_content = driver.find_element(By.XPATH, f'//span[contains(text(),"We will commence {coin} trading")]')
+            content = main_content.text.split('.')
             content = content[0]
             return title, article_link, content
         return title, article_link, ''
