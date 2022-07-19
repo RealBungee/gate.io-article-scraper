@@ -33,6 +33,13 @@ def scrape_gateio_article(article_number):
 
     try:
         title = driver.find_element(By.XPATH, '/html[1]/body[1]/div[1]/div[1]/div[3]/div[1]/div[1]/h1[1]').text
+        if 'Initial Sale Result & Listing Schedule' in title:
+            coin = get_coin_from_listing_title(title).upper()
+            main_content = driver.find_element(By.XPATH, f'//span[contains(text(),"We will commence {coin} trading")]')
+            content = main_content.text.split('.')
+            content = content[0]
+            return title, article_link, content
+
         if 'Gate.io will list' in title:
             curr_year = str(date.today().year)
             main_content = driver.find_element(By.CLASS_NAME, 'dtl-content')
@@ -40,18 +47,30 @@ def scrape_gateio_article(article_number):
             content = content[0]
             return title, article_link, content
 
-        if 'Initial Sale Result & Listing Schedule' in title:
-            coin = get_coin_from_listing_title(title).upper()
-            main_content = driver.find_element(By.XPATH, f'//span[contains(text(),"We will commence {coin} trading")]')
-            content = main_content.text.split('.')
-            content = content[0]
-            return title, article_link, content
         return title, article_link, ''
     except (NoSuchElementException, WebDriverException) as err:
         logging.warning('No title found', err)
     driver.quit()
 
-def scrape_mexc_article(extended = False):
+def load_recent_mexc_articles():
+    website_link = f'https://support.mexc.com/hc/en-001/sections/360000547811-New-Listings'
+    options = webdriver.ChromeOptions()
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])
+    driver = webdriver.Chrome(options=options)
+    driver.get(website_link)
+    sleep(3)
+
+    try:
+        articles = []
+        for i in range(1, 11):
+            title = driver.find_element(By.XPATH, f'/html[1]/body[1]/main[1]/div[2]/div[1]/section[1]/ul[1]/li[{i}]').text
+            articles.append(title)
+        logging.info('Successfully loaded most recent Mexc Listing Articles')
+        return articles
+    except (NoSuchElementException, WebDriverException) as ex:
+        logging.exception(f'Error while loading recent Mexc articles: {ex}')
+
+def scrape_mexc_article(articles):
     website_link = f'https://support.mexc.com/hc/en-001/sections/360000547811-New-Listings'
     options = webdriver.ChromeOptions()
     #options.add_argument("--headless")
@@ -60,22 +79,15 @@ def scrape_mexc_article(extended = False):
     driver.get(website_link)
     sleep(3)
 
-    if(extended):
-        recent_articles = []
-        try:
-            for i in range(1, 6):
-                title = driver.find_element(By.XPATH, f'/html[1]/body[1]/main[1]/div[2]/div[1]/section[1]/ul[1]/li[{i}]').text
-                recent_articles.append(title)
-            logging.info('Successfully loaded most recent Mexc listings')
-            return recent_articles
-        except (NoSuchElementException, WebDriverException) as ex:
-            logging.exception(f'Error finding article: {ex}')
-        
-    else:
-        #detect new articles
-        try:
-            title = driver.find_element(By.XPATH, f'/html[1]/body[1]/main[1]/div[2]/div[1]/section[1]/ul[1]/li[1]').text
-            url = driver.find_element(By.XPATH, '/html[1]/body[1]/main[1]/div[2]/div[1]/section[1]/ul[1]/li[1]/a[1]').get_attribute('href')
-            return title, url
-        except (NoSuchElementException, WebDriverException) as ex:
-            logging.exception(f'Error finding article: {ex}')
+    try:
+        new_article_list = []
+        released_articles = []
+        for i in range(1, 11):
+            title = driver.find_element(By.XPATH, f'/html[1]/body[1]/main[1]/div[2]/div[1]/section[1]/ul[1]/li[{i}]').text
+            if title not in articles:
+                url = driver.find_element(By.XPATH, f'/html[1]/body[1]/main[1]/div[2]/div[1]/section[1]/ul[1]/li[{i}]/a[1]').get_attribute('href')
+                released_articles.append([title, url])
+            new_article_list.append(title)
+        return released_articles, new_article_list
+    except (NoSuchElementException, WebDriverException) as ex:
+        logging.exception(f'Error finding article: {ex}')

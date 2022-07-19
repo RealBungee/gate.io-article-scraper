@@ -2,21 +2,20 @@ import logging
 import threading
 from time import sleep
 from text_processing import concat_markets, get_coin_from_listing_title
-from scraper import scrape_gateio_article, scrape_mexc_article
+from scraper import scrape_gateio_article, scrape_mexc_article, load_recent_mexc_articles
 from coingecko import get_coin_markets
 from webhook import send_gateio_article_alert, send_gateio_listing_alert, send_mexc_listing_alert
 from storageMethods import update_futures_listings, save_latest_article, load_latest_article
 
 def mexc():
     logging.info('Mexc scraper started')
-    recent_articles = scrape_mexc_article(extended=True)
+    saved_articles = load_recent_mexc_articles()
+    logging.info('Successfully loaded most recent Mexc listings')
     while(True):
-        article, url = scrape_mexc_article()
-        if article not in recent_articles:
-            exchanges = concat_markets(get_coin_markets(get_coin_from_listing_title(article)))
-            send_mexc_listing_alert(article, url, exchanges)
-            recent_articles.insert(0, article)
-            recent_articles.pop(len(recent_articles)-1)
+        released_articles, saved_articles = scrape_mexc_article(saved_articles)
+        for a in released_articles:
+            exchanges = concat_markets(get_coin_markets(get_coin_from_listing_title(a[0])))
+            send_mexc_listing_alert(a[0], a[1], exchanges)
             logging.info('NEW LISTING ALERT')
         else:
             logging.info('No new listing announcements found - retrying in 30 seconds')
