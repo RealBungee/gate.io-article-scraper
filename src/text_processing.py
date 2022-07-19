@@ -1,7 +1,12 @@
 def get_coin_from_listing_title(title):
-    coin = title.split('(')
-    coin = coin[1].split(')')
-    coin = coin[0].lower()
+    if '(' in title:
+        coin = title.split('(')
+        coin = coin[1].split(')')
+        coin = coin[0].lower()
+    if '-' in title:
+        coin = title.split('-')
+        coin = coin[1].split('in the')
+        coin = coin[0]
     return coin
 
 def concat_markets(markets):
