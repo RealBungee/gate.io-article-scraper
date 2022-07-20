@@ -1,7 +1,7 @@
 import logging
 from time import sleep
 from datetime import date
-from text_processing import get_coin_from_listing_title
+from text_processing import get_gate_coin
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
@@ -34,7 +34,7 @@ def scrape_gateio_article(article_number):
     try:
         title = driver.find_element(By.XPATH, '/html[1]/body[1]/div[1]/div[1]/div[3]/div[1]/div[1]/h1[1]').text
         if 'Initial Sale Result & Listing Schedule' in title:
-            coin = get_coin_from_listing_title(title).upper()
+            coin = get_gate_coin(title).upper()
             main_content = driver.find_element(By.XPATH, f'//span[contains(text(),"We will commence {coin} trading")]')
             content = main_content.text.split('.')
             content = content[0]
