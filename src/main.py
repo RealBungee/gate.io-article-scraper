@@ -1,7 +1,7 @@
 import logging
 import threading
 from time import sleep
-from text_processing import concat_markets, get_coin_from_listing_title
+from text_processing import concat_markets, get_gate_coin, get_mexc_coin
 from scraper import scrape_gateio_article, scrape_mexc_article, load_recent_mexc_articles
 from coingecko import get_coin_markets
 from webhook import send_gateio_article_alert, send_gateio_listing_alert, send_mexc_listing_alert
@@ -13,7 +13,7 @@ def mexc():
     while(True):
         released_articles, saved_articles = scrape_mexc_article(saved_articles)
         for a in released_articles:
-            exchanges = concat_markets(get_coin_markets(get_coin_from_listing_title(a[0])))
+            exchanges = concat_markets(get_coin_markets(get_mexc_coin(a[0])))
             send_mexc_listing_alert(a[0], a[1], exchanges)
             logging.info('NEW LISTING ALERT')
         else:
@@ -31,7 +31,7 @@ def gateio():
         
         if not("no article!" in title):
             if content != '':
-                exchanges = concat_markets(get_coin_markets(get_coin_from_listing_title(title)))
+                exchanges = concat_markets(get_coin_markets(get_gate_coin(title)))
                 send_gateio_listing_alert(title, content, link, exchanges)
                 logging.info('NEW LISTING ALERT!')
             else:
@@ -65,7 +65,7 @@ def main():
     futures = threading.Thread(target=check_for_futures_updates)
 
     logging.info('Starting threads')
-    #g.start()
+    g.start()
     m.start()
     #futures.start()
     
