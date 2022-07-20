@@ -25,7 +25,7 @@ def load_latest_article():
 # e.g save_object(list, "binance_futures")
 def save_object(obj, exchangeName):
     try:
-        with open("../ListingsData/" + exchangeName + ".pickle", "wb") as f:
+        with open("./ListingsData/" + exchangeName + ".pickle", "wb") as f:
             pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
     except Exception as ex:
         logging.error(f'Error during pickling object (Possibly unsupported): {ex}')
