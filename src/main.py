@@ -10,7 +10,6 @@ from storageMethods import update_futures_listings, save_latest_article, load_la
 def mexc():
     logging.info('Mexc scraper started')
     saved_articles = load_recent_mexc_articles()
-    logging.info('Successfully loaded most recent Mexc listings')
     while(True):
         released_articles, saved_articles = scrape_mexc_article(saved_articles)
         for a in released_articles:
@@ -66,8 +65,8 @@ def main():
     futures = threading.Thread(target=check_for_futures_updates)
 
     logging.info('Starting threads')
-    g.start()
+    #g.start()
     m.start()
-    futures.start()
+    #futures.start()
     
 main()
