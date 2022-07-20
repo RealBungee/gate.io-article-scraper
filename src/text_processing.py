@@ -19,6 +19,9 @@ def get_coin_from_listing_title(title):
     return coin
 
 def concat_markets(markets):
+    if markets == '':
+        return 'No markets available'
+
     if not 'No markets available' in markets:
         exchanges = '| '
         for m in markets:
