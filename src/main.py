@@ -4,8 +4,30 @@ from time import sleep
 from text_processing import concat_markets, get_gate_coin, get_mexc_coin
 from scraper import scrape_gateio_article, scrape_mexc_article, load_recent_mexc_articles
 from coingecko import get_coin_markets
-from webhook import send_gateio_article_alert, send_gateio_listing_alert, send_mexc_listing_alert
-from storageMethods import update_futures_listings, save_latest_article, load_latest_article
+from twitter import get_tweets
+from webhook import send_gateio_article_alert, send_gateio_listing_alert, send_mexc_listing_alert, send_tweet_alert
+from storageMethods import update_futures_listings, save_latest_article, load_latest_article, save_twitter_accounts
+
+def twitter():
+    logging.info('Starting twitter terminal')
+    # load information into an array or a map
+    [1289071298556170240, 1256716686]
+    accounts = [{'user_id': 1304552437487939585, 'latest_tweet': 1550003741197221888}, {'user_id':1289071298556170240, 'latest_tweet': 1525110032895025154}]
+    initialized = False
+    while(True):
+        for a in accounts:
+            res = get_tweets(a['user_id'], a['latest_tweet'])
+            if res['meta']['result_count'] != 0:
+                username = res['includes']['users'][0]['username']
+                for t in res['data']:
+                    tweet_id = t['id']
+                    url = 'https://twitter.com/{}/status/{}'.format(username, tweet_id)
+                    if initialized: send_tweet_alert(username, url)
+                    a['latest_tweet'] = tweet_id
+        if not initialized: initialized = True
+        save_twitter_accounts(accounts)
+        #save the most recent tweets to file
+        sleep(10)   
 
 def mexc():
     logging.info('Mexc scraper started')
@@ -62,11 +84,13 @@ def main():
     logging.info('Creating threads')
     g = threading.Thread(target=gateio)
     m = threading.Thread(target=mexc)
+    #t = threading.Thread(target=twitter)
     futures = threading.Thread(target=check_for_futures_updates)
 
     logging.info('Starting threads')
     g.start()
     m.start()
+    #t.start()
     #futures.start()
     
 main()

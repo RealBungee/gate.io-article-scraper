@@ -35,3 +35,9 @@ def send_perp_delisting_alert(title, link, token):
     content = f'New Perpetual Delisting on {title}: {token}\nLink to listing: {link}'
     webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
     webhook.execute()
+
+def send_tweet_alert(user, url):
+    webhook_url = 'https://discord.com/api/webhooks/999640989780164658/3FcS9JlB1V6srLgExPZnICzpPKt28-bVhGcDIvkaN6x9voVIevIUKQQ5ZODZhDjGRcOd'
+    content = f'New tweet from {user}:\n{url}'
+    webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
+    webhook.execute()
