@@ -16,12 +16,12 @@ def load_twitter_accounts():
 
 def save_twitter_accounts(accounts):
     logging.info('Saving twitter account information to a json file')
-    with open('twitterAccounts.txt', 'w') as file:
+    with open('./Data/twitterAccounts.txt', 'w') as file:
         file.write(json.dumps(accounts))
 
 #save the latest released article number to csv file
 def save_latest_article(article_number):
-    myFile = open('latest_article.csv', 'w', newline='')
+    myFile = open('./Data/latest_article.csv', 'w', newline='')
     with myFile:
         writer = csv.writer(myFile)
         writer.writerow(article_number)
@@ -29,7 +29,7 @@ def save_latest_article(article_number):
 #load the last article number scraped
 def load_latest_article():
     article_num = ''
-    with open('latest_article.csv', newline='') as myFile:
+    with open('./Data/latest_article.csv', newline='') as myFile:
         reader = csv.reader(myFile)
         for row in reader:
             article_num = row
@@ -39,7 +39,7 @@ def load_latest_article():
 # e.g save_object(list, "binance_futures")
 def save_object(obj, exchangeName):
     try:
-        with open("./ListingsData/" + exchangeName + ".pickle", "wb") as f:
+        with open("./Data/" + exchangeName + ".pickle", "wb") as f:
             pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
     except Exception as ex:
         logging.error(f'Error during pickling object (Possibly unsupported): {ex}')
@@ -48,7 +48,7 @@ def save_object(obj, exchangeName):
 # e.g load_object("binance_futures")
 def load_object(filename):
     try:
-        with open("./ListingsData/" + filename, "rb") as f:
+        with open("./Data/" + filename, "rb") as f:
             return pickle.load(f)
     except Exception as ex:
         logging.error(f'Error during unpickling object (Possibly unsupported): {ex}')
@@ -57,7 +57,7 @@ def load_object(filename):
 def update_futures_listings():
     try:
         # Create listing file if it doesn't exist
-        if not os.path.isfile("./ListingsData/futuresListings.pickle"):
+        if not os.path.isfile("./Data/futuresListings.pickle"):
             create_futures_listing_file()
         # load saved exchange data
         exchanges = load_object("futuresListings.pickle")
