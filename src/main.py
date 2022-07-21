@@ -22,12 +22,12 @@ def twitter():
                 for t in res['data']:
                     tweet_id = t['id']
                     url = 'https://twitter.com/{}/status/{}'.format(username, tweet_id)
-                    if initialized: send_tweet_alert(username, url)
-                    a['latest_tweet'] = tweet_id
+                    #if initialized: send_tweet_alert(username, url)
+                a['latest_tweet'] = res['meta']['newest_id']
         if not initialized: initialized = True
+        #save the most recent tweet information to file
         save_twitter_accounts(accounts)
-        #save the most recent tweets to file
-        sleep(10)   
+        sleep(10)
 
 def mexc():
     logging.info('Mexc scraper started')
