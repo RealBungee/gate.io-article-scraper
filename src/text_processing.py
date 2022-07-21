@@ -22,9 +22,14 @@ def get_mexc_coin(title):
         coin = coin[0]
         title = ''
     if '(' in title:
-        coin = title.split('will list')
-        coin = coin[1].split('(')
-        coin = coin[0]
+        if 'new m-day':
+            coin = title.split('new m-day')
+            coin = coin[1].split('(')
+            coin = coin[0]
+        else:
+            coin = title.split('will list')
+            coin = coin[1].split('(')
+            coin = coin[0]
         title = ''
     if '-' in title:
         coin = title.split('-')
