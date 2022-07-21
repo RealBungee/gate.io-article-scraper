@@ -2,8 +2,22 @@ import csv
 import logging
 import pickle
 import os
+import json
 from coingecko import get_all_futures_coins
 from webhook import send_perp_listing_alert, send_perp_delisting_alert
+
+#used to load the original config file
+def load_twitter_accounts():
+    f = open('./coinData_2.conf')
+    data = json.load(f)
+    print(data)
+    #data = cp['config']
+#load_twitter_accounts()
+
+def save_twitter_accounts(accounts):
+    logging.info('Saving twitter account information to a json file')
+    with open('twitterAccounts.txt', 'w') as file:
+        file.write(json.dumps(accounts))
 
 #save the latest released article number to csv file
 def save_latest_article(article_number):
