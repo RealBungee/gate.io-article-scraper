@@ -1,3 +1,10 @@
+def get_coin_abbreviation(title):
+    if '(' in title:
+        coin = title.split('(')
+        coin = coin[1].split(')')
+        coin = coin[0].upper()
+    return coin
+
 def get_gate_coin(title):
     title = title.lower()
     if 'startup' in title:
@@ -6,11 +13,11 @@ def get_gate_coin(title):
         coin = coin[0]
         title = ''
     if '(' in title:
-        coin = title.split('will list')
+        coin = title.split('will list ')
         coin = coin[1].split('(')
         coin = coin[0]
         title = ''
-    coin = coin.replace(' ', '')
+    #coin = coin.replace(' ', '')
     print(coin)
     return coin
 

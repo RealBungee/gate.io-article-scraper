@@ -35,7 +35,11 @@ def mexc():
     while(True):
         released_articles, saved_articles = scrape_mexc_article(saved_articles)
         for a in released_articles:
-            exchanges = concat_markets(get_coin_markets(get_mexc_coin(a[0])))
+            try:
+                exchanges = concat_markets(get_coin_markets(get_gate_coin(a[0])))
+            except Exception as ex:
+                exchanges = 'No markets available'
+                logging.info('Error fetching exchange information: ', ex)
             send_mexc_listing_alert(a[0], a[1], exchanges)
             logging.info('NEW LISTING ALERT')
         else:
@@ -53,7 +57,11 @@ def gateio():
         
         if not("no article!" in title):
             if content != '':
-                exchanges = concat_markets(get_coin_markets(get_gate_coin(title)))
+                try:
+                    exchanges = concat_markets(get_coin_markets(get_gate_coin(title)))
+                except Exception as ex:
+                    exchanges = 'No markets available'
+                    logging.info('Error fetching exchange information: ', ex)
                 send_gateio_listing_alert(title, content, link, exchanges)
                 logging.info('NEW LISTING ALERT!')
             else:
