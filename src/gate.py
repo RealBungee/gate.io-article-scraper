@@ -66,7 +66,6 @@ def scrape_gateio_article(article_number):
 
 def gateio(article_number = load_latest_article()):
     logging.info('Gate.io scraper started')
-    article_number = int(load_latest_article())
     title, link, content = scrape_gateio_article(article_number)
     if title == '':
         logging.info('No new listing announcements found - retrying in 60 seconds')
