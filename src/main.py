@@ -21,7 +21,7 @@ def main():
     g = threading.Thread(target=gateio)
     m = threading.Thread(target=mexc)
     #t = threading.Thread(target=twitter)
-    futures = threading.Thread(target=check_for_futures_updates)
+    #futures = threading.Thread(target=check_for_futures_updates)
 
     logging.info('Starting threads')
     g.start()

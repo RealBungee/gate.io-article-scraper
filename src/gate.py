@@ -64,8 +64,10 @@ def scrape_gateio_article(article_number):
         driver.quit()
         return '', '', ''
 
-def gateio(article_number = load_latest_article()):
+def gateio(article_number = ''):
     logging.info('Gate.io scraper started')
+    if article_number == '':
+        article_number = load_latest_article()
     title, link, content = scrape_gateio_article(article_number)
     if title == '':
         logging.info('No new listing announcements found - retrying in 60 seconds')

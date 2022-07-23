@@ -47,8 +47,10 @@ def scrape_mexc_article(articles):
     except (NoSuchElementException, WebDriverException) as ex:
         logging.exception(f'Error finding article: {ex}')
 
-def mexc(saved_articles = load_recent_mexc_articles()):
+def mexc(saved_articles = ''):
     logging.info('Mexc scraper started')
+    if saved_articles == '':
+        saved_articles = load_recent_mexc_articles()
     released_articles, saved_articles = scrape_mexc_article(saved_articles)
     for a in released_articles:
         exchanges = concat_markets(get_coin_markets(get_mexc_coin(a[0])))
