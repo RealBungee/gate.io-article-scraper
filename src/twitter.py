@@ -1,6 +1,8 @@
-import requests
 import os
+import requests
 import logging
+from time import sleep
+from storageMethods import save_twitter_accounts
 
 # To set your environment variables in your terminal run the following line:
 # export 'BEARER_TOKEN'='<your_bearer_token>'
@@ -44,3 +46,24 @@ def get_tweets(user_id, since=''):
         return json_res
     except (requests.RequestException, requests.ConnectionError, requests.Timeout) as err:
         logging.error(f'Error fetching tweets for {user_id}:\n{err}')
+
+def twitter():
+    logging.info('Starting twitter terminal')
+    # load information into an array or a map
+    [1289071298556170240, 1256716686]
+    accounts = [{'user_id': 1304552437487939585, 'latest_tweet': 1550003741197221888}, {'user_id':1289071298556170240, 'latest_tweet': 1525110032895025154}]
+    initialized = False
+    while(True):
+        for a in accounts:
+            res = get_tweets(a['user_id'], a['latest_tweet'])
+            if res['meta']['result_count'] != 0:
+                username = res['includes']['users'][0]['username']
+                for t in res['data']:
+                    tweet_id = t['id']
+                    url = 'https://twitter.com/{}/status/{}'.format(username, tweet_id)
+                    #if initialized: send_tweet_alert(username, url)
+                a['latest_tweet'] = res['meta']['newest_id']
+        if not initialized: initialized = True
+        #save the most recent tweet information to file
+        save_twitter_accounts(accounts)
+        sleep(10)

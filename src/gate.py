@@ -1,10 +1,13 @@
 import logging
 from time import sleep
 from datetime import date
-from text_processing import get_coin_abbreviation
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
+from storageMethods import load_latest_article, save_latest_article
+from text_processing import get_coin_abbreviation, get_gate_coin, concat_markets
+from coingecko import get_coin_markets
+from webhook import send_gateio_article_alert, send_gateio_listing_alert
 
 def scrape_gateio_article(article_number):
     article_link = f'https://www.gate.io/article/{article_number}'
@@ -60,42 +63,30 @@ def scrape_gateio_article(article_number):
         logging.warning('No title found', err)
     driver.quit()
 
-def load_recent_mexc_articles():
-    website_link = f'https://support.mexc.com/hc/en-001/sections/360000547811-New-Listings'
-    options = webdriver.ChromeOptions()
-    options.add_experimental_option('excludeSwitches', ['enable-logging'])
-    driver = webdriver.Chrome(options=options)
-    driver.get(website_link)
-    sleep(3)
-
-    try:
-        articles = []
-        for i in range(1, 11):
-            title = driver.find_element(By.XPATH, f'/html[1]/body[1]/main[1]/div[2]/div[1]/section[1]/ul[1]/li[{i}]').text
-            articles.append(title)
-        logging.info('Successfully loaded most recent Mexc Listing Articles')
-        return articles
-    except (NoSuchElementException, WebDriverException) as ex:
-        logging.exception(f'Error while loading recent Mexc articles: {ex}')
-
-def scrape_mexc_article(articles):
-    website_link = f'https://support.mexc.com/hc/en-001/sections/360000547811-New-Listings'
-    options = webdriver.ChromeOptions()
-    #options.add_argument("--headless")
-    options.add_experimental_option('excludeSwitches', ['enable-logging'])
-    driver = webdriver.Chrome(options=options)
-    driver.get(website_link)
-    sleep(3)
-
-    try:
-        new_article_list = []
-        released_articles = []
-        for i in range(1, 11):
-            title = driver.find_element(By.XPATH, f'/html[1]/body[1]/main[1]/div[2]/div[1]/section[1]/ul[1]/li[{i}]').text
-            if title not in articles:
-                url = driver.find_element(By.XPATH, f'/html[1]/body[1]/main[1]/div[2]/div[1]/section[1]/ul[1]/li[{i}]/a[1]').get_attribute('href')
-                released_articles.append([title, url])
-            new_article_list.append(title)
-        return released_articles, new_article_list
-    except (NoSuchElementException, WebDriverException) as ex:
-        logging.exception(f'Error finding article: {ex}')
+def gateio():
+    logging.info('Gate.io scraper started')
+    article_number = int(load_latest_article())
+    while(True):
+        try:
+            title, link, content = scrape_gateio_article(article_number)
+        except TypeError as err:
+            logging.error(f'Error checking for articles: {err}')
+        
+        if not("no article!" in title):
+            if content != '':
+                try:
+                    exchanges = concat_markets(get_coin_markets(get_gate_coin(title)))
+                except Exception as ex:
+                    exchanges = 'No markets available'
+                    logging.info('Error fetching exchange information: ', ex)
+                send_gateio_listing_alert(title, content, link, exchanges)
+                logging.info('NEW LISTING ALERT!')
+            else:
+                send_gateio_article_alert(title, link)
+                logging.info('NEW ARTICLE ALERT!')
+            article_number += 1
+            save_latest_article([article_number])
+            sleep(5)
+        else:
+            logging.info('No new listing announcements found - retrying in 60 seconds')
+            sleep(60)
