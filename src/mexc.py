@@ -41,25 +41,19 @@ def scrape_mexc_article(articles):
             title = driver.find_element(By.XPATH, f'/html[1]/body[1]/main[1]/div[2]/div[1]/section[1]/ul[1]/li[{i}]').text
             if title not in articles:
                 url = driver.find_element(By.XPATH, f'/html[1]/body[1]/main[1]/div[2]/div[1]/section[1]/ul[1]/li[{i}]/a[1]').get_attribute('href')
-                released_articles.append([title, url])
+                released_articles.append({'title': title, 'url': url})
             new_article_list.append(title)
         return released_articles, new_article_list
     except (NoSuchElementException, WebDriverException) as ex:
         logging.exception(f'Error finding article: {ex}')
 
-def mexc():
+def mexc(saved_articles = load_recent_mexc_articles()):
     logging.info('Mexc scraper started')
-    saved_articles = load_recent_mexc_articles()
-    while(True):
-        released_articles, saved_articles = scrape_mexc_article(saved_articles)
-        for a in released_articles:
-            try:
-                exchanges = concat_markets(get_coin_markets(get_mexc_coin(a[0])))
-            except Exception as ex:
-                exchanges = 'No markets available'
-                logging.info('Error fetching exchange information: ', ex)
-            send_mexc_listing_alert(a[0], a[1], exchanges)
-            logging.info('NEW LISTING ALERT')
-        else:
-            logging.info('No new listing announcements found - retrying in 30 seconds')
-        sleep(30)
+    released_articles, saved_articles = scrape_mexc_article(saved_articles)
+    for a in released_articles:
+        exchanges = concat_markets(get_coin_markets(get_mexc_coin(a[0])))
+        send_mexc_listing_alert(a['title'], a['url'], exchanges)
+        logging.info('NEW LISTING ALERT')
+    logging.info('Looking for new annoucements in 30 seconds')
+    sleep(30)
+    mexc(saved_articles)
