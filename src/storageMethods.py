@@ -7,12 +7,17 @@ from coingecko import get_all_futures_coins
 from webhook import send_perp_listing_alert, send_perp_delisting_alert
 
 #used to load the original config file
-def load_twitter_accounts():
-    f = open('./coinData_2.conf')
+def load_scrapeData_file():
+    f = open('./Data/coinData.json')
     data = json.load(f)
-    print(data)
-    #data = cp['config']
-#load_twitter_accounts()
+    coin_data = data['config']['scrapeData']
+    print(coin_data)
+    return coin_data
+
+def load_twitter_accounts():
+    f = open('./Data/twitterAccounts.txt')
+    accounts = json.load(f)
+    return accounts
 
 def save_twitter_accounts(accounts):
     logging.info('Saving twitter account information to a json file')
