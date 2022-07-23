@@ -7,7 +7,7 @@ cg = CoinGeckoAPI()
 def get_coin_markets(coin):
     try:
         res = cg.get_coin_by_id(id=coin, community_data = 'false', tickers = 'true', developer_data = 'false', sparkline = 'false', market_data = 'false', localization = 'false')
-    except (ValueError, HTTPError, ConnectionError) as err:
+    except (ValueError, HTTPError, ConnectionError, Exception) as err:
         logging.error(f'Error Fetching Coin Information From Coingecko! \n{err}')
         return 'No markets available'
     tickers = []

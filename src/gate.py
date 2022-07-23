@@ -20,20 +20,20 @@ def scrape_gateio_article(article_number):
     driver.get(article_link)
     sleep(3)
 
-    #detect whether article has been posted already
+    #detect whether the article is not posted yet
     try:
         title = driver.find_element(By.XPATH, '//h1[text() ="no article!"]')
-        return title.text, article_link, ''
+        return '', '', ''
     except (NoSuchElementException, WebDriverException) as err:
         logging.warning('Element containing "no article!" not found')
-
+    #detect whether the article is not posted yet
     try:
         title = driver.find_element(By.XPATH, '//body[text() ="not permitted"]')
-        title = 'no article!'
-        return title, article_link, ''
+        return '', '', ''
     except (NoSuchElementException, WebDriverException) as err:
         logging.warning('Element containing "not permitted!" not found')
 
+    #detect what article has been posted and its contents
     try:
         title = driver.find_element(By.XPATH, '/html[1]/body[1]/div[1]/div[1]/div[3]/div[1]/div[1]/h1[1]').text
         if 'Gate.io Startup Free Offering:' in title:
@@ -59,34 +59,28 @@ def scrape_gateio_article(article_number):
             return title, article_link, content
 
         return title, article_link, ''
-    except (NoSuchElementException, WebDriverException) as err:
+    except (NoSuchElementException, WebDriverException, Exception) as err:
         logging.warning('No title found', err)
-    driver.quit()
+        driver.quit()
+        return '', '', ''
 
-def gateio():
+def gateio(article_number = load_latest_article()):
     logging.info('Gate.io scraper started')
     article_number = int(load_latest_article())
-    while(True):
-        try:
-            title, link, content = scrape_gateio_article(article_number)
-        except TypeError as err:
-            logging.error(f'Error checking for articles: {err}')
-        
-        if not("no article!" in title):
-            if content != '':
-                try:
-                    exchanges = concat_markets(get_coin_markets(get_gate_coin(title)))
-                except Exception as ex:
-                    exchanges = 'No markets available'
-                    logging.info('Error fetching exchange information: ', ex)
-                send_gateio_listing_alert(title, content, link, exchanges)
-                logging.info('NEW LISTING ALERT!')
-            else:
-                send_gateio_article_alert(title, link)
-                logging.info('NEW ARTICLE ALERT!')
-            article_number += 1
-            save_latest_article([article_number])
-            sleep(5)
+    title, link, content = scrape_gateio_article(article_number)
+    if title == '':
+        logging.info('No new listing announcements found - retrying in 60 seconds')
+        sleep(60)
+    else:
+        if content != '':
+            exchanges = concat_markets(get_coin_markets(get_gate_coin(title)))
+            send_gateio_listing_alert(title, content, link, exchanges)
+            logging.info('NEW LISTING ALERT!')
         else:
-            logging.info('No new listing announcements found - retrying in 60 seconds')
-            sleep(60)
+            send_gateio_article_alert(title, link)
+            logging.info('NEW ARTICLE ALERT!')
+        article_number += 1
+        save_latest_article([article_number])
+        sleep(5)
+    gateio(article_number)
+            

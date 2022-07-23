@@ -9,7 +9,6 @@ def check_for_futures_updates():
     logging.info('Futures thread started')
     while(True):
         try:
-            logging.info('-----------------------------')
             logging.info('Checking for futures updates')
             update_futures_listings()
             sleep(60)
