@@ -71,13 +71,13 @@ def gateio(article_number = load_latest_article()):
         logging.info('No new listing announcements found - retrying in 60 seconds')
         sleep(60)
     else:
-        if content != '':
+        if content == '':
+            send_gateio_article_alert(title, link)
+            logging.info('NEW ARTICLE ALERT!')
+        else:
             exchanges = concat_markets(get_coin_markets(get_gate_coin(title)))
             send_gateio_listing_alert(title, content, link, exchanges)
             logging.info('NEW LISTING ALERT!')
-        else:
-            send_gateio_article_alert(title, link)
-            logging.info('NEW ARTICLE ALERT!')
         article_number += 1
         save_latest_article([article_number])
         sleep(5)
