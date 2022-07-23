@@ -25,7 +25,9 @@ def main():
 
     logging.info('Starting threads')
     g.start()
+    logging.info('Gate.io scraper started')
     m.start()
+    logging.info('Mexc scraper started')
     #t.start()
     #futures.start()
     

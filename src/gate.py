@@ -64,13 +64,21 @@ def scrape_gateio_article(article_number):
         driver.quit()
         return '', '', ''
 
-def gateio(article_number = ''):
-    logging.info('Gate.io scraper started')
-    if article_number == '':
-        article_number = load_latest_article()
-    title, link, content = scrape_gateio_article(article_number)
+def gateio(article_number = 0, times_checked = 0):
+    if article_number == 0:
+        article_number = int(load_latest_article())
+    
+    if times_checked >= 10:
+        logging.info('Checking next article in case current was deleted...')
+        times_checked = 0
+        temp_article = article_number + 1
+        title, link, content = scrape_gateio_article(temp_article)
+    else:
+        title, link, content = scrape_gateio_article(article_number)
+    
     if title == '':
         logging.info('No new listing announcements found - retrying in 60 seconds')
+        times_checked += 1
         sleep(60)
     else:
         if content == '':
@@ -80,8 +88,11 @@ def gateio(article_number = ''):
             exchanges = concat_markets(get_coin_markets(get_gate_coin(title)))
             send_gateio_listing_alert(title, content, link, exchanges)
             logging.info('NEW LISTING ALERT!')
-        article_number += 1
+        if times_checked >= 10:
+            article_number += 2
+        else:
+            article_number += 1
         save_latest_article([article_number])
+        times_checked = 0
         sleep(5)
-    gateio(article_number)
-            
+    gateio(article_number, times_checked)

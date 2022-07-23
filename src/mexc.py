@@ -48,7 +48,6 @@ def scrape_mexc_article(articles):
         logging.exception(f'Error finding article: {ex}')
 
 def mexc(saved_articles = ''):
-    logging.info('Mexc scraper started')
     if saved_articles == '':
         saved_articles = load_recent_mexc_articles()
     released_articles, saved_articles = scrape_mexc_article(saved_articles)
