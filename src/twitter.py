@@ -2,6 +2,7 @@ import os
 import requests
 import logging
 from time import sleep
+from webhook import send_tweet_alert
 from storageMethods import save_twitter_accounts, load_twitter_accounts, load_scrapeData_file
 
 # To set your environment variables in your terminal run the following line:
@@ -63,15 +64,17 @@ def twitter():
                 res = get_tweets(a['user_id'], a['latest_tweet'])
                 if res['meta']['result_count'] != 0:
                     username = res['includes']['users'][0]['username']
+                    a['latest_tweet'] = res['meta']['newest_id']
+                    a['username'] = username
                     for t in res['data']:
                         tweet_id = t['id']
                         url = 'https://twitter.com/{}/status/{}'.format(username, tweet_id)
-                a['latest_tweet'] = res['meta']['newest_id']
+                        #if initialized: send_tweet_alert(username, url)
                 #should change at some point as we don't need to set username every time
-                a['username'] = username
+                
             except Exception as err:
                 print(f'For user: {user} with ID: {id} an error occured: {err}')
-        #if initialized: send_tweet_alert(username, url)
+        
         if not initialized: initialized = True
         #save the most recent tweet information to file
         save_twitter_accounts(accounts)
