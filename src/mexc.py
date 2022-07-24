@@ -47,14 +47,13 @@ def scrape_mexc_article(articles):
     except (NoSuchElementException, WebDriverException) as ex:
         logging.exception(f'Error finding article: {ex}')
 
-def mexc(saved_articles = ''):
-    if saved_articles == '':
-        saved_articles = load_recent_mexc_articles()
-    released_articles, saved_articles = scrape_mexc_article(saved_articles)
-    for a in released_articles:
-        exchanges = concat_markets(get_coin_markets(get_mexc_coin(a[0])))
-        send_mexc_listing_alert(a['title'], a['url'], exchanges)
-        logging.info('NEW LISTING ALERT')
-    logging.info('Looking for new annoucements in 30 seconds')
-    sleep(30)
-    mexc(saved_articles)
+def mexc():
+    saved_articles = load_recent_mexc_articles()
+    while(True):
+        released_articles, saved_articles = scrape_mexc_article(saved_articles)
+        for a in released_articles:
+            exchanges = concat_markets(get_coin_markets(get_mexc_coin(a[0])))
+            send_mexc_listing_alert(a['title'], a['url'], exchanges)
+            logging.info('NEW LISTING ALERT')
+        logging.info('Looking for new annoucements in 30 seconds')
+        sleep(30)
