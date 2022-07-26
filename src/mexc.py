@@ -5,14 +5,13 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from text_processing import get_mexc_coin, concat_markets
 from coingecko import get_coin_markets
-from webhook import send_mexc_listing_alert
+from webhook import send_mexc_article_alert, send_mexc_listing_alert
 
-def load_recent_mexc_articles():
-    website_link = f'https://support.mexc.com/hc/en-001/sections/360000547811-New-Listings'
+def load_mexc_articles(link):
     options = webdriver.ChromeOptions()
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
     driver = webdriver.Chrome(options=options)
-    driver.get(website_link)
+    driver.get(link)
     sleep(5)
 
     try:
@@ -25,13 +24,11 @@ def load_recent_mexc_articles():
     except (NoSuchElementException, WebDriverException) as ex:
         logging.exception(f'Error while loading recent Mexc articles: {ex}')
 
-def scrape_mexc_article(articles):
-    website_link = f'https://support.mexc.com/hc/en-001/sections/360000547811-New-Listings'
+def scrape_mexc_listings(articles, link):
     options = webdriver.ChromeOptions()
-    #options.add_argument("--headless")
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
     driver = webdriver.Chrome(options=options)
-    driver.get(website_link)
+    driver.get(link)
     sleep(5)
 
     try:
@@ -48,13 +45,23 @@ def scrape_mexc_article(articles):
         logging.exception(f'Error finding article: {ex}')
 
 def mexc():
-    saved_articles = load_recent_mexc_articles()
+    listings_link = 'https://support.mexc.com/hc/en-001/sections/360000547811-New-Listings'
+    news_link = 'https://support.mexc.com/hc/en-001/sections/360000679912-Latest-News'
+    saved_listings =  load_mexc_articles(listings_link)
+    saved_news = load_mexc_articles(news_link)
     while(True):
-        released_articles, saved_articles = scrape_mexc_article(saved_articles)
+        released_articles, saved_listings = scrape_mexc_listings(saved_listings, listings_link)
         for a in released_articles:
             coin =  get_mexc_coin(a['title'])
             exchanges = concat_markets(get_coin_markets(coin))
             send_mexc_listing_alert(a['title'], a['url'], exchanges)
             logging.info('NEW LISTING ALERT')
+        released_news, saved_news = scrape_mexc_listings(saved_news, news_link)
+        for a in released_news:
+            coin = get_mexc_coin(a['title'])
+            exchanges = concat_markets(get_coin_markets(coin))
+            send_mexc_article_alert(a['title'], a['url'])
+            logging.info('NEWS ALERT')
+        logging.info('Looking for News in 30 seconds')
         logging.info('Looking for new annoucements in 30 seconds')
         sleep(30)
