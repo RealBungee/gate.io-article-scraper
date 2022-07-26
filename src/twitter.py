@@ -50,12 +50,12 @@ def get_tweets(user_id, since='', attempt = 0):
     except (requests.RequestException, requests.ConnectionError, requests.Timeout) as err:
         if type(err) == requests.ConnectionError and attempt < 5:
             attempt += 1
-            get_tweets(user_id, since, attempt)
             logging.info(f'Connection was closed, attempting to fetch tweets again. Attempt: {attempt}.')
+            get_tweets(user_id, since, attempt)
         else:
             logging.error(f'Error fetching tweets for {user_id}:\n{err}')
 
-def save_information(res, a):
+def process_information(res, a):
     try:
         user_id = a['user_id']
         username = a['username']
@@ -63,18 +63,18 @@ def save_information(res, a):
             username = res['includes']['users'][0]['username']
             a['latest_tweet'] = res['meta']['newest_id']
             a['username'] = username
-            for t in res['data']:
+            for t in reversed(res['data']):
                 tweet_id = t['id']
                 url = 'https://twitter.com/{}/status/{}'.format(username, tweet_id)
                 if initialized: send_tweet_alert(username, url)
     except Exception as err:
-        print(f'For user: {username} with ID: {user_id} an error occured: {err}')
+        logging.info(f'For user: {username} with ID: {user_id} an error occured: {err}')
 
 def process_tweets():
     while True:
         a = q.get()
         res = get_tweets(a['user_id'], a['latest_tweet'])
-        save_information(res, a)
+        process_information(res, a)
         q.task_done()
 
 def twitter():

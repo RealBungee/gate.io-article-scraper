@@ -26,10 +26,10 @@ def main():
 
     logging.info('Starting threads')
     g.start()
-    # sleep(5)
+    sleep(5)
     logging.info('Gate.io scraper started')
     m.start()
-    # sleep(5)
+    sleep(5)
     logging.info('Mexc scraper started')
     t.start()
     #futures.start()
