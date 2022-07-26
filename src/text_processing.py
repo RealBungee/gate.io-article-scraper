@@ -28,8 +28,8 @@ def get_mexc_coin(title):
         coin = coin[1].split('(')
         coin = coin[0]
         title = ''
-    if '(' in title:
-        if 'new m-day':
+    elif '(' in title:
+        if 'new m-day' in title:
             coin = title.split('new m-day')
             coin = coin[1].split('(')
             coin = coin[0]
@@ -38,11 +38,12 @@ def get_mexc_coin(title):
             coin = coin[1].split('(')
             coin = coin[0]
         title = ''
-    if '-' in title:
+    elif '-' in title:
         coin = title.split('-')
         coin = coin[1].split('in the')
         coin = coin[0]
-    
+    else:
+        coin = ''
     coin = coin.replace(' ', '')
     print(coin)
     return coin
