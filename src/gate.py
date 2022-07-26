@@ -36,7 +36,7 @@ def scrape_gateio_article(article_number):
     #detect what article has been posted and its contents
     try:
         title = driver.find_element(By.XPATH, '/html[1]/body[1]/div[1]/div[1]/div[3]/div[1]/div[1]/h1[1]').text
-        if 'Gate.io Startup Free Offering:' in title:
+        if 'Gate.io Startup Free Offering:' in title or 'Gate.io Startup:' in title or 'Initial Free Offering:' in title:
             coin = get_coin_abbreviation(title)
             main_content = driver.find_element(By.XPATH, f'//div[@class="dtl-content"]')
             content = main_content.text.split('(2) ')
@@ -44,7 +44,7 @@ def scrape_gateio_article(article_number):
             content = content[0]
             return title, article_link, content
         
-        if 'Sale Result' in title or 'Gate.io Startup:' in title:
+        if 'Sale Result' in title:
             coin = get_coin_abbreviation(title)
             main_content = driver.find_element(By.XPATH, f'//span[contains(text(),"We will commence {coin} trading")]')
             content = main_content.text.split('.')
