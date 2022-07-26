@@ -13,7 +13,7 @@ def load_recent_mexc_articles():
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
     driver = webdriver.Chrome(options=options)
     driver.get(website_link)
-    sleep(3)
+    sleep(5)
 
     try:
         articles = []
@@ -32,7 +32,7 @@ def scrape_mexc_article(articles):
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
     driver = webdriver.Chrome(options=options)
     driver.get(website_link)
-    sleep(3)
+    sleep(5)
 
     try:
         new_article_list = []
@@ -52,7 +52,8 @@ def mexc():
     while(True):
         released_articles, saved_articles = scrape_mexc_article(saved_articles)
         for a in released_articles:
-            exchanges = concat_markets(get_coin_markets(get_mexc_coin(a[0])))
+            coin =  get_mexc_coin(a['title'])
+            exchanges = concat_markets(get_coin_markets(coin))
             send_mexc_listing_alert(a['title'], a['url'], exchanges)
             logging.info('NEW LISTING ALERT')
         logging.info('Looking for new annoucements in 30 seconds')

@@ -39,7 +39,7 @@ def scrape_gateio_article(article_number):
         if 'Gate.io Startup Free Offering:' in title:
             coin = get_coin_abbreviation(title)
             main_content = driver.find_element(By.XPATH, f'//div[@class="dtl-content"]')
-            content = main_content.text.split('(2)')
+            content = main_content.text.split('(2) ')
             content = content[1].split(',')
             content = content[0]
             return title, article_link, content
