@@ -26,15 +26,28 @@ def get_gate_coin(title):
     return coin
 
 def get_mexc_coin(title):
+    print('Title: ', title)
     title = title.lower()
     if 'listing arrangement' in title:
         coin = title.split('for')
         coin = coin[1].split('(')
         coin = coin[0]
         title = ''
-    elif '(' in title:
+    if '(' in title:
         if 'new m-day' in title:
             coin = title.split('new m-day')
+            coin = coin[1].split('(')
+            coin = coin[0]
+        elif 'trading contest' in title:
+            coin = title.split('trading contest with')
+            coin = coin[1].split('(')
+            coin = coin[0]
+        elif 'contract swap' in title:
+            coin = title.split('the ')
+            coin = coin[1].split('(')
+            coin = coin[0]
+        elif 'resumption' in title:
+            coin = title.split('for ')
             coin = coin[1].split('(')
             coin = coin[0]
         else:
@@ -48,8 +61,9 @@ def get_mexc_coin(title):
         coin = coin[0]
     else:
         coin = ''
+
     coin = coin.replace(' ', '')
-    print(coin)
+    print('Printing coin: ', coin)
     return coin
 
 

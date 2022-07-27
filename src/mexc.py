@@ -58,8 +58,8 @@ def mexc():
             logging.info('NEW LISTING ALERT')
         released_news, saved_news = scrape_mexc_listings(saved_news, news_link)
         for a in released_news:
-            coin = get_mexc_coin(a['title'])
-            exchanges = concat_markets(get_coin_markets(coin))
+            #coin = get_mexc_coin(a['title'])
+            #exchanges = concat_markets(get_coin_markets(coin))
             send_mexc_article_alert(a['title'], a['url'])
             logging.info('NEWS ALERT')
         logging.info('Looking for News in 30 seconds')
