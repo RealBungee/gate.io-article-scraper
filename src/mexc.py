@@ -43,6 +43,7 @@ def scrape_mexc_listings(articles, link):
         return released_articles, new_article_list
     except (NoSuchElementException, WebDriverException) as ex:
         logging.exception(f'Error finding article: {ex}')
+        return [], articles 
 
 def mexc():
     listings_link = 'https://support.mexc.com/hc/en-001/sections/360000547811-New-Listings'
@@ -62,6 +63,6 @@ def mexc():
             #exchanges = concat_markets(get_coin_markets(coin))
             send_mexc_article_alert(a['title'], a['url'])
             logging.info('NEWS ALERT')
-        logging.info('Looking for News in 30 seconds')
-        logging.info('Looking for new annoucements in 30 seconds')
-        sleep(30)
+        logging.info('Looking for News in 60 seconds')
+        logging.info('Looking for new annoucements in 60 seconds')
+        sleep(60)
