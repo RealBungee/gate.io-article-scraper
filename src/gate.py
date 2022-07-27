@@ -36,18 +36,18 @@ def scrape_gateio_article(article_number):
     #detect what article has been posted and its contents
     try:
         title = driver.find_element(By.XPATH, '/html[1]/body[1]/div[1]/div[1]/div[3]/div[1]/div[1]/h1[1]').text
+        if 'Sale Result' in title:
+            coin = get_coin_abbreviation(title)
+            main_content = driver.find_element(By.XPATH, f'//span[contains(text(),"We will commence {coin} trading")]')
+            content = main_content.text.split('.')
+            content = content[0]
+            return title, article_link, content
+
         if 'Gate.io Startup Free Offering:' in title or 'Gate.io Startup:' in title or 'Initial Free Offering:' in title:
             coin = get_coin_abbreviation(title)
             main_content = driver.find_element(By.XPATH, f'//div[@class="dtl-content"]')
             content = main_content.text.split('(2) ')
             content = content[1].split(',')
-            content = content[0]
-            return title, article_link, content
-        
-        if 'Sale Result' in title:
-            coin = get_coin_abbreviation(title)
-            main_content = driver.find_element(By.XPATH, f'//span[contains(text(),"We will commence {coin} trading")]')
-            content = main_content.text.split('.')
             content = content[0]
             return title, article_link, content
 
@@ -68,7 +68,7 @@ def gateio():
     article_number = int(load_latest_article())
     times_checked = 0
     while(True):
-        if times_checked >= 10:
+        if times_checked >= 5:
             logging.info('Checking next article in case current was deleted...')
             times_checked = 0
             temp_article = article_number + 1
@@ -88,7 +88,7 @@ def gateio():
                 exchanges = concat_markets(get_coin_markets(get_gate_coin(title)))
                 send_gateio_listing_alert(title, content, link, exchanges)
                 logging.info('NEW LISTING ALERT!')
-            if times_checked >= 10:
+            if times_checked >= 5:
                 article_number += 2
             else:
                 article_number += 1
