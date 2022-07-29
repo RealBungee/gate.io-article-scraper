@@ -22,7 +22,7 @@ def load_mexc_articles(link):
         logging.info('Successfully loaded most recent Mexc Listing Articles')
         driver.quit()
         return articles
-    except (NoSuchElementException, WebDriverException) as ex:
+    except (NoSuchElementException, WebDriverException, Exception) as ex:
         driver.quit()
         logging.exception(f'Error while loading recent Mexc articles: {ex}')
 
@@ -44,7 +44,7 @@ def scrape_mexc_listings(articles, link):
             new_article_list.append(title)
         driver.quit()
         return released_articles, new_article_list
-    except (NoSuchElementException, WebDriverException) as ex:
+    except (NoSuchElementException, WebDriverException, Exception) as ex:
         logging.exception(f'Error finding article: {ex}')
         driver.quit()
         return [], articles 
