@@ -18,7 +18,6 @@ def check_for_futures_updates():
 
 def main():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(threadName)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
-    logging.info('Creating threads')
     g = threading.Thread(target=gateio)
     m = threading.Thread(target=mexc)
     t = threading.Thread(target=twitter)
@@ -29,7 +28,7 @@ def main():
     sleep(5)
     logging.info('Gate.io scraper started')
     m.start()
-    sleep(5)
+    sleep(30)
     logging.info('Mexc scraper started')
     t.start()
     #futures.start()
