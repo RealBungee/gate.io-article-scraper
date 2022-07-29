@@ -20,8 +20,10 @@ def load_mexc_articles(link):
             title = driver.find_element(By.XPATH, f'/html[1]/body[1]/main[1]/div[2]/div[1]/section[1]/ul[1]/li[{i}]').text
             articles.append(title)
         logging.info('Successfully loaded most recent Mexc Listing Articles')
+        driver.quit()
         return articles
     except (NoSuchElementException, WebDriverException) as ex:
+        driver.quit()
         logging.exception(f'Error while loading recent Mexc articles: {ex}')
 
 def scrape_mexc_listings(articles, link):
@@ -40,10 +42,13 @@ def scrape_mexc_listings(articles, link):
                 url = driver.find_element(By.XPATH, f'/html[1]/body[1]/main[1]/div[2]/div[1]/section[1]/ul[1]/li[{i}]/a[1]').get_attribute('href')
                 released_articles.append({'title': title, 'url': url})
             new_article_list.append(title)
+        driver.quit()
         return released_articles, new_article_list
     except (NoSuchElementException, WebDriverException) as ex:
         logging.exception(f'Error finding article: {ex}')
+        driver.quit()
         return [], articles 
+    
 
 def mexc():
     listings_link = 'https://support.mexc.com/hc/en-001/sections/360000547811-New-Listings'
