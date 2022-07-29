@@ -1,6 +1,8 @@
 import os
+import threading
 import requests
 import logging
+import concurrent
 from socket import error
 from threading import Thread
 from queue import Queue
@@ -70,14 +72,11 @@ def process_information(res, a):
     except Exception as err:
         logging.info(f'For user: {username} with ID: {user_id} an error occured: {err}')
 
-def process_tweets():
-    while True:
-        a = q.get()
-        res = get_tweets(a['user_id'], a['latest_tweet'])
-        process_information(res, a)
-        q.task_done()
-
-def twitter():
+def process_tweets(a):
+    res = get_tweets(a['user_id'], a['latest_tweet'])
+    process_information(res, a)
+    
+def twitter_queue_function():
     logging.info('Starting twitter terminal')
     global initialized
     global bearer_token
@@ -104,6 +103,41 @@ def twitter():
             q.join()
         except Exception as ex:
             print(ex)
+        if not initialized: initialized = True
+        logging.info('Saving new twitter information')
+        save_twitter_accounts(accounts)
+        bearer_count += 1
+        print(f'BEARER TOKEN USE COUNT: {bearer_count}')
+        print(f'TOKEN: {bearer_token}')
+        sleep(100)
+
+def twitter():
+    logging.info('Starting twitter terminal')
+    global initialized
+    global bearer_token
+    bearer_tokens = ['AAAAAAAAAAAAAAAAAAAAAHYFOQEAAAAAotRfiWhRaZJG2bnG%2BUwv2d7ebho%3Dt6y5qpIBZ7aGcivxrmO1StTpjvR1ozBypmRYbQKxiJ6Vo3VIs8', 'AAAAAAAAAAAAAAAAAAAAANy9fAEAAAAAXcqpQ8Yt9irxX8uPljRnQT4GBsY%3DwgNEzmk9huZh55bkFRW8y8MFtkzlLsRqWNt3wKyxjQ538NiLPl', 'AAAAAAAAAAAAAAAAAAAAAMu9fAEAAAAA0GROl01yTH9brD2vJqKsEnaebFs%3DSJ3DzryXaQF6dNbK6tdI3hAB5QpZ2sskQEW2BbbTYDxD5tEPnI']
+    initialized = False
+    accounts = load_twitter_accounts()
+    bearer_count = 0
+    while(True):
+        if bearer_count < 3: bearer_token = bearer_tokens[0]
+        if bearer_count < 6 and bearer_count >= 3: bearer_token = bearer_tokens[1]
+        if bearer_count < 9 and bearer_count >= 6:bearer_token = bearer_tokens[2]
+        if bearer_count >= 9: 
+            bearer_token = bearer_tokens[0]
+            bearer_count = 0
+        
+        # with concurrent.futures.ThreadPoolExecutor(max_workers=len(accounts)) as executor:
+        #     for a in accounts:
+        #         executor.submit(process_tweets, 0,)
+        threads = []
+        for a in accounts:
+            t = Thread(target=process_tweets, args=(a,))
+            threads.append(t)
+            t.daemon=True
+            t.start()
+        for t in threads:
+            t.join()
         if not initialized: initialized = True
         logging.info('Saving new twitter information')
         save_twitter_accounts(accounts)
