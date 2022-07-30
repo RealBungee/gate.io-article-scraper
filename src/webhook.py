@@ -24,6 +24,12 @@ def send_mexc_article_alert(title, link):
     webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
     webhook.execute()    
 
+def send_kucoin_listing_alert(title, url, exchanges):
+    webhook_url  =  'https://discord.com/api/webhooks/1002851145384984666/1RuFg5C0xmmmYh4EWw7GGvSoUZOkJoRcOUrmwVveCCXBGXzWkUStBt8gq4vNWlta1QOj'
+    content  = f'{title}\n{url}\nListed on: {exchanges}'
+    webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
+    webhook.execute()
+
 def send_perp_listing_alert(title, link, token):
     webhook_url = 'https://discord.com/api/webhooks/997498164640743546/4OUHRWpJaqtvpCJLJTvJLc5kIfxquatQlhjwhUZrXeifwwCJr1slqUYq2b-rIwoF-JLK'
     content = f'New Perpetual Listing on {title}: {token}\nLink to listing: {link}'
