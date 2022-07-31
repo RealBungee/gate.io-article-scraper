@@ -90,14 +90,17 @@ def get_article(url):
         logging.exception(f'Exception occured while fetching gateio article: \n{e}')
 
 def scrape_gateio(article_number):
-    url = f'https://www.gate.io/article/{article_number}'
-    response = get_article(url)
-    html = BeautifulSoup(response.content, 'html.parser')
+    try:
+        url = f'https://www.gate.io/article/{article_number}'
+        response = get_article(url)
+        html = BeautifulSoup(response.content, 'html.parser')
+        title = html.select('h1')[0].text
+        content = html.find('div', class_='dtl-content')
+    except (AttributeError, Exception) as e:
+        logging.exception(e)
+
     if response.status_code != 200: return {'title':  '', 'url': '', 'content': ''}
-    
-    title = html.select('h1')[0].text
-    content = html.find('div', class_='dtl-content')
-    if title == 'not permitted' or 'no article!' in title : return {'title':  '', 'url': '', 'content': ''}
+    if title == 'not permitted' or 'no article!' in title or title == '': return {'title':  '', 'url': '', 'content': ''}
     
     try:
         if 'Sale Result' in title:
