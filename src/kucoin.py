@@ -33,7 +33,6 @@ def scrape_listings(link, articles=[], initialized=False):
         logging.exception(f'Error finding article: {ex}')
         driver.quit()
         return [], articles 
-    
 
 def kucoin():
     listings_link = 'https://www.kucoin.com/news/categories/listing'
