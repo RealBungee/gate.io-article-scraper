@@ -6,65 +6,66 @@ from datetime import date
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
+from http.client import RemoteDisconnected
 from storageMethods import load_latest_article, save_latest_article
 from text_processing import get_coin_abbreviation, get_gate_coin, concat_markets
 from coingecko import get_coin_markets
 from webhook import send_gateio_article_alert, send_gateio_listing_alert
 
-# def scrape_gateio_article(article_number):
-#     article_link = f'https://www.gate.io/article/{article_number}'
-#     options = webdriver.ChromeOptions()
-#     options.add_argument("--headless")
-#     options.add_experimental_option('excludeSwitches', ['enable-logging'])
+def scrape_gateio_article(article_number):
+    url = f'https://www.gate.io/article/{article_number}'
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])
     
-#     #start the chrome driver (open browser)
-#     driver = webdriver.Chrome(options=options)
-#     driver.get(article_link)
-#     sleep(3)
+    #start the chrome driver (open browser)
+    driver = webdriver.Chrome(options=options)
+    driver.get(url)
+    sleep(3)
 
-#     #detect whether the article is not posted yet
-#     try:
-#         title = driver.find_element(By.XPATH, '//h1[text() ="no article!"]')
-#         return '', '', ''
-#     except (NoSuchElementException, WebDriverException) as err:
-#         logging.warning('Element containing "no article!" not found')
-#     #detect whether the article is not posted yet
-#     try:
-#         title = driver.find_element(By.XPATH, '//body[text() ="not permitted"]')
-#         return '', '', ''
-#     except (NoSuchElementException, WebDriverException) as err:
-#         logging.warning('Element containing "not permitted!" not found')
+    #detect whether the article is not posted yet
+    try:
+        title = driver.find_element(By.XPATH, '//h1[text() ="no article!"]')
+        return {'title':  '', 'url': '', 'content': ''}
+    except (NoSuchElementException, WebDriverException) as err:
+        logging.warning('Element containing "no article!" not found')
+    #detect whether the article is not posted yet
+    try:
+        title = driver.find_element(By.XPATH, '//body[text() ="not permitted"]')
+        return {'title':  '', 'url': '', 'content': ''}
+    except (NoSuchElementException, WebDriverException) as err:
+        logging.warning('Element containing "not permitted!" not found')
 
-#     #detect what article has been posted and its contents
-#     try:
-#         title = driver.find_element(By.XPATH, '/html[1]/body[1]/div[1]/div[1]/div[3]/div[1]/div[1]/h1[1]').text
-#         if 'Sale Result' in title:
-#             coin = get_coin_abbreviation(title)
-#             main_content = driver.find_element(By.XPATH, f'//span[contains(text(),"We will commence {coin} trading")]')
-#             content = main_content.text.split('.')
-#             content = content[0]
-#             return title, article_link, content
+    #detect what article has been posted and its contents
+    try:
+        title = driver.find_element(By.XPATH, '/html[1]/body[1]/div[1]/div[1]/div[3]/div[1]/div[1]/h1[1]').text
+        if 'Sale Result' in title:
+            coin = get_coin_abbreviation(title)
+            main_content = driver.find_element(By.XPATH, f'//span[contains(text(),"We will commence {coin} trading")]')
+            content = main_content.text.split('.')
+            content = content[0]
+            return {'title':  title, 'url': url, 'content': content}
 
-#         if 'Gate.io Startup Free Offering:' in title or 'Gate.io Startup:' in title or 'Initial Free Offering:' in title:
-#             coin = get_coin_abbreviation(title)
-#             main_content = driver.find_element(By.XPATH, f'//div[@class="dtl-content"]')
-#             content = main_content.text.split('(2) ')
-#             content = content[1].split(',')
-#             content = content[0]
-#             return title, article_link, content
+        if 'Gate.io Startup Free Offering:' in title or 'Gate.io Startup:' in title or 'Initial Free Offering:' in title:
+            coin = get_coin_abbreviation(title)
+            main_content = driver.find_element(By.XPATH, f'//div[@class="dtl-content"]')
+            content = main_content.text.split('(2) ')
+            content = content[1].split(',')
+            content = content[0]
+            return {'title':  title, 'url': url, 'content': content}
 
-#         if 'Gate.io will list' in title:
-#             curr_year = str(date.today().year)
-#             main_content = driver.find_element(By.CLASS_NAME, 'dtl-content')
-#             content = main_content.text.split(curr_year)
-#             content = content[0]
-#             return title, article_link, content
+        if 'Gate.io will list' in title:
+            curr_year = str(date.today().year)
+            main_content = driver.find_element(By.CLASS_NAME, 'dtl-content')
+            content = main_content.text.split(curr_year)
+            content = content[0]
+            return {'title':  title, 'url': url, 'content': content}
 
-#         return title, article_link, ''
-#     except (NoSuchElementException, WebDriverException, Exception) as err:
-#         logging.warning('No title found', err)
-#         driver.quit()
-#         return '', '', ''
+        return {'title':  title, 'url': url, 'content': ''}
+    except (NoSuchElementException, WebDriverException, Exception) as err:
+        logging.warning('No title found', err)
+        driver.quit()
+        {'title':  '', 'url': '', 'content': ''}
 
 def get_article(url):
     headers = {
@@ -82,27 +83,24 @@ def get_article(url):
         "sec-fetch-site": "same-origin",
         "sec-fetch-user": "?1",
         "upgrade-insecure-requests": "1",
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:63.0) Gecko/20100101 Firefox/63.0'
     }
     try:
         return requests.request("GET", url, headers=headers)
-    except Exception as e:
+    except (RemoteDisconnected, Exception) as e:
         logging.exception(f'Exception occured while fetching gateio article: \n{e}')
 
 def scrape_gateio(article_number):
     try:
         url = f'https://www.gate.io/article/{article_number}'
         response = get_article(url)
+        print(response)
         html = BeautifulSoup(response.content, 'html.parser')
-        title = html.select('h1')[0].text
+        title = html.find_all('h1')[0].text
         content = html.find('div', class_='dtl-content')
-    except (AttributeError, Exception) as e:
-        logging.exception(e)
+        if response.status_code != 200: return {'title':  '', 'url': '', 'content': ''}
+        if title == 'not permitted' or 'no article!' in title or title == '': return {'title':  '', 'url': '', 'content': ''}
 
-    if response.status_code != 200: return {'title':  '', 'url': '', 'content': ''}
-    if title == 'not permitted' or 'no article!' in title or title == '': return {'title':  '', 'url': '', 'content': ''}
-    
-    try:
         if 'Sale Result' in title:
             coin = get_coin_abbreviation(title)
             content = content.find_all('span')
@@ -112,7 +110,7 @@ def scrape_gateio(article_number):
                     break
             content = content.split('.')
             content = content[0]
-            return title, url, content
+            return {'title':  title, 'url': url, 'content': content}
 
         if 'Gate.io Startup Free Offering:' in title or 'Gate.io Startup:' in title or 'Initial Free Offering:' in title:
             coin = get_coin_abbreviation(title)
@@ -124,13 +122,13 @@ def scrape_gateio(article_number):
             content = content.split('Trading starts ')
             content = content[1].split(',')
             content = 'Trading starts ' + content[0]
-            return title, url, content
+            return {'title':  title, 'url': url, 'content': content}
 
         if 'Gate.io will list' in title:
             content = content.find_all('strong')
             content = content[0].text
-            return title, url, content
-    except Exception as e:
+            return {'title':  title, 'url': url, 'content': content}
+    except (AttributeError, requests.ConnectionError, Exception) as e:
         logging.exception(f'Exception while scraping gateio: \n{e}')
         return {'title':  '', 'url': '', 'content': ''}
 
@@ -142,9 +140,9 @@ def gateio():
             logging.info('Checking next article in case current was deleted...')
             times_checked = 0
             temp_article = article_number + 1
-            article = scrape_gateio(temp_article)
+            article = scrape_gateio_article(temp_article)
         else:
-            article = scrape_gateio(article_number)
+            article = scrape_gateio_article(article_number)
         
         if article['title'] == '':
             logging.info('No new listing announcements found - retrying in 60 seconds')
@@ -152,12 +150,18 @@ def gateio():
             sleep(60)
         else:
             if article['content'] == '':
-                send_gateio_article_alert(article['title'], ['link'])
-                logging.info('NEW ARTICLE ALERT!')
+                try:
+                    send_gateio_article_alert(article['title'], ['link'])
+                    logging.info('NEW ARTICLE ALERT!')
+                except requests.exceptions.ConnectionError as err:
+                    logging.error(f'Error sending an alert: \n{err}')
             else:
                 exchanges = concat_markets(get_coin_markets(get_gate_coin(article['title'])))
-                send_gateio_listing_alert(article, exchanges)
-                logging.info('NEW LISTING ALERT!')
+                try:
+                    send_gateio_listing_alert(article, exchanges)
+                    logging.info('NEW LISTING ALERT!')
+                except requests.exceptions.ConnectionError as err:
+                    logging.error(f'Error sending an alert: \n{err}')
             if times_checked >= 5:
                 article_number += 2
             else:
