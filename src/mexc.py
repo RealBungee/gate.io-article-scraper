@@ -5,13 +5,16 @@ from time import sleep
 from text_processing import get_mexc_coin, concat_markets
 from coingecko import get_coin_markets
 from webhook import send_mexc_article_alert, send_mexc_listing_alert
+from xmlrpc.client import ProtocolError
+from http.client import RemoteDisconnected
 
 def scrape_mexc(url, saved_articles, initialized=True):
     scraper = cloudscraper.create_scraper(delay=10, browser='chrome')
     try:
         res = scraper.get(url)
-        logging.info(res)
+        if res.status_code != 200: return saved_articles, []
         res = res.text
+
         html = BeautifulSoup(res, 'html.parser')
         items = html.find_all('li', class_='article-list-item article-promoted')
         new_articles = []
@@ -23,7 +26,7 @@ def scrape_mexc(url, saved_articles, initialized=True):
                 new_articles.append({ 'title': article, 'url': url})
             article_list.append(article)  
         return article_list, new_articles
-    except Exception as e:
+    except (RemoteDisconnected, ConnectionError, ProtocolError, Exception) as e:
         logging.exception('Exception while scraping mexc: ', e)
         return saved_articles, []
     
