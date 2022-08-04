@@ -2,6 +2,7 @@ import logging
 import threading
 from time import sleep
 from gate import gateio
+from kucoin import kucoin
 #from kucoin import get_kucoin_announcement, kucoin
 from mexc import mexc
 from twitter import twitter
@@ -22,12 +23,12 @@ def main():
     g = threading.Thread(target=gateio)
     m = threading.Thread(target=mexc)
     t = threading.Thread(target=twitter)
-    #k = threading.Thread(target=get_kucoin_announcement)
+    k = threading.Thread(target=kucoin)
     #futures = threading.Thread(target=check_for_futures_updates)
 
     logging.info('Starting threads')
     g.start()
-    #k.start()
+    k.start()
     logging.info('Gate.io scraper started')
     m.start()
     logging.info('Mexc scraper started')
