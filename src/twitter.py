@@ -74,7 +74,9 @@ def twitter():
     logging.info('Starting twitter terminal')
     global initialized
     global bearer_token
-    bearer_tokens = ['AAAAAAAAAAAAAAAAAAAAAHYFOQEAAAAAotRfiWhRaZJG2bnG%2BUwv2d7ebho%3Dt6y5qpIBZ7aGcivxrmO1StTpjvR1ozBypmRYbQKxiJ6Vo3VIs8', 'AAAAAAAAAAAAAAAAAAAAANy9fAEAAAAAXcqpQ8Yt9irxX8uPljRnQT4GBsY%3DwgNEzmk9huZh55bkFRW8y8MFtkzlLsRqWNt3wKyxjQ538NiLPl', 'AAAAAAAAAAAAAAAAAAAAAMu9fAEAAAAA0GROl01yTH9brD2vJqKsEnaebFs%3DSJ3DzryXaQF6dNbK6tdI3hAB5QpZ2sskQEW2BbbTYDxD5tEPnI']
+    bearer_tokens = ['AAAAAAAAAAAAAAAAAAAAAHYFOQEAAAAAotRfiWhRaZJG2bnG%2BUwv2d7ebho%3Dt6y5qpIBZ7aGcivxrmO1StTpjvR1ozBypmRYbQKxiJ6Vo3VIs8', 
+    'AAAAAAAAAAAAAAAAAAAAANy9fAEAAAAAXcqpQ8Yt9irxX8uPljRnQT4GBsY%3DwgNEzmk9huZh55bkFRW8y8MFtkzlLsRqWNt3wKyxjQ538NiLPl', 
+    'AAAAAAAAAAAAAAAAAAAAAMu9fAEAAAAA0GROl01yTH9brD2vJqKsEnaebFs%3DSJ3DzryXaQF6dNbK6tdI3hAB5QpZ2sskQEW2BbbTYDxD5tEPnI']
     initialized = False
     accounts = load_twitter_accounts()
     bearer_count = 0
