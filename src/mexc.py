@@ -1,12 +1,13 @@
 import logging
+from random import randint
 import cloudscraper
 from bs4 import BeautifulSoup
 from time import sleep
-from text_processing import get_mexc_coin, concat_markets
-from coingecko import get_coin_markets
-from webhook import send_mexc_article_alert, send_mexc_listing_alert
 from xmlrpc.client import ProtocolError
 from http.client import RemoteDisconnected
+from coingecko import get_coin_markets
+from text_processing import get_mexc_coin, concat_markets
+from webhook import send_mexc_article_alert, send_mexc_listing_alert
 
 def scrape_mexc(url, saved_articles, initialized=True):
     scraper = cloudscraper.create_scraper(delay=10, browser='chrome')
@@ -24,6 +25,7 @@ def scrape_mexc(url, saved_articles, initialized=True):
             if article not in saved_articles and initialized:
                 url = 'https://support.mexc.com/' + i.find('a').get('href')
                 new_articles.append({ 'title': article, 'url': url})
+                saved_articles.append(article)
             article_list.append(article)  
         return article_list, new_articles
     except (RemoteDisconnected, ConnectionError, ProtocolError, Exception) as e:
@@ -48,9 +50,9 @@ def mexc():
         for a in new_articles:
             send_mexc_article_alert(a['title'], a['url'])
             logging.info('NEWS ALERT')
-        logging.info('Looking for News/Announcements in 60 seconds')
-        sleep(60)
-
+        timeout = randint(50, 80)
+        logging.info(f'Looking for News/Announcements in {timeout} seconds')
+        sleep(timeout)
 
 # def load_mexc_articles(link):
 #     options = webdriver.ChromeOptions()
