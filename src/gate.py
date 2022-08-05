@@ -1,4 +1,6 @@
 import logging
+from random import randint
+from h11 import ProtocolError
 import requests
 from bs4 import BeautifulSoup
 from time import sleep
@@ -7,7 +9,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from http.client import RemoteDisconnected
-from storageMethods import load_latest_article, save_latest_article
 from text_processing import get_coin_abbreviation, get_gate_coin, concat_markets
 from coingecko import get_coin_markets
 from webhook import send_gateio_article_alert, send_gateio_listing_alert
@@ -60,20 +61,23 @@ def scrape_gateio_article(article_number):
             content = main_content.text.split(curr_year)
             content = content[0]
             return {'title':  title, 'url': url, 'content': content}
-
+        driver.quit()
         return {'title':  title, 'url': url, 'content': ''}
     except (NoSuchElementException, WebDriverException, Exception) as err:
         logging.warning('No title found', err)
         driver.quit()
-        {'title':  '', 'url': '', 'content': ''}
+        return {'title':  '', 'url': '', 'content': ''}
 
-def get_article(url):
+def get_url(url):
+    payload = "tags_query=&title_query=&cate_query=lastest"
     headers = {
-        "cookie": "lang=en; curr_fiat=USD; market_title=usdt; defaultBuyCryptoFiat=EUR; _ga=GA1.2.1735262583.1657554676; _uetvid=cbee6840050911ed93dd19846032d0f6; b_notify=1; notify_close=kyc; show_zero_funds=1; chatroom_lang=en; idb=1658613657; futureRisktip=1; show_tv=1; _gid=GA1.2.972110085.1659160898; login_notice_check=^%^2F; countryId_leftbar=78; last_lang_leftbar=en; ch=ann27383; l_d_data_USDT_time=1659198495917; lasturl=^%^2Farticle^%^2F27373; AWSALB=8xysfLpDMUMKCDm+ke+gsAcWji76Yv0S1a7MZ/7M5oz9wEHbSHmpa5rYm9ULieQEcQtxJOuytuYLx8Xcqz7WNIxtqm1lnbMdLb6rU/FHQgdoFxCYd9PaX6MNMHWG; AWSALBCORS=8xysfLpDMUMKCDm+ke+gsAcWji76Yv0S1a7MZ/7M5oz9wEHbSHmpa5rYm9ULieQEcQtxJOuytuYLx8Xcqz7WNIxtqm1lnbMdLb6rU/FHQgdoFxCYd9PaX6MNMHWG",
+        "cookie": "lang=en; curr_fiat=USD; market_title=usdt; defaultBuyCryptoFiat=EUR; _ga=GA1.2.1735262583.1657554676; _uetvid=cbee6840050911ed93dd19846032d0f6; b_notify=1; notify_close=kyc; show_zero_funds=1; chatroom_lang=en; ch=ann27383; idb=1659275456; login_notice_check=^%^2F; _gid=GA1.2.994940262.1659613700; lasturl=^%^2Farticlelist^%^2Fann; _gat_UA-1833997-40=1; _gat_gtag_UA_222583338_1=1; _gat_gtag_UA_1833997_38=1; AWSALB=W2CRJEDp8Bl/QNG502EecWzZRunBNdLU2N6gwGdtXjWxfeg9g9gGEfrhaIVlO3/i+BUrWw7PWKQdO+WUaUfkEuU2uZR29pppmlbuSEczz57WT7bbmmiKNT1PSFiE; AWSALBCORS=W2CRJEDp8Bl/QNG502EecWzZRunBNdLU2N6gwGdtXjWxfeg9g9gGEfrhaIVlO3/i+BUrWw7PWKQdO+WUaUfkEuU2uZR29pppmlbuSEczz57WT7bbmmiKNT1PSFiE",
         "authority": "www.gate.io",
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
         "accept-language": "en-US,en;q=0.9,hr;q=0.8,bs;q=0.7",
         "cache-control": "no-cache",
+        "content-type": "application/x-www-form-urlencoded",
+        "origin": "null",
         "pragma": "no-cache",
         "sec-ch-ua": "^\^.Not/A",
         "sec-ch-ua-mobile": "?0",
@@ -83,17 +87,43 @@ def get_article(url):
         "sec-fetch-site": "same-origin",
         "sec-fetch-user": "?1",
         "upgrade-insecure-requests": "1",
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:63.0) Gecko/20100101 Firefox/63.0'
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.81 Safari/537.36"
     }
     try:
-        return requests.request("GET", url, headers=headers)
-    except (RemoteDisconnected, Exception) as e:
-        logging.exception(f'Exception occured while fetching gateio article: \n{e}')
+        res = requests.request("GET", url, data=payload, headers=headers)
+        if res.status_code != 200:
+            raise Exception(
+            "Gateio scraper encountered an error: {} {}".format(
+                res.status_code, res.text
+            )
+        )
+        return res
+    except (Exception) as e:
+        logging.error(f'Exception occured while fetching gateio url: \n{e}')
 
-def scrape_gateio(article_number):
+def scrape_article_list(saved_articles, initialized=False):
     try:
-        url = f'https://www.gate.io/article/{article_number}'
-        response = get_article(url)
+        url = "https://www.gate.io/articlelist/ann/0"
+        response = get_url(url)
+        html = BeautifulSoup(response.text, 'html.parser')
+        item_list = html.find_all('div', class_='latnewslist')
+        articles = []
+        new_articles = []
+        for i in item_list:
+            title = i.find('h3').text
+            url = i.find('a').get('href')
+            if title not in saved_articles and initialized:
+                saved_articles.append(title)
+                new_articles.append({'title': title, 'url': url})
+            articles.append(title)
+        return articles, new_articles
+    except (RemoteDisconnected, ConnectionError, ProtocolError, Exception) as e:
+        logging.error(f'Exception occured while scraping Gate.io: \n{e}')
+        return saved_articles, []
+
+def scrape_article(url):
+    try:
+        response = get_url(url)
         print(response)
         html = BeautifulSoup(response.content, 'html.parser')
         title = html.find_all('h1')[0].text
@@ -122,6 +152,7 @@ def scrape_gateio(article_number):
             content = content.split('Trading starts ')
             content = content[1].split(',')
             content = 'Trading starts ' + content[0]
+            content += ' UTC'
             return {'title':  title, 'url': url, 'content': content}
 
         if 'Gate.io will list' in title:
@@ -132,40 +163,39 @@ def scrape_gateio(article_number):
         logging.exception(f'Exception while scraping gateio: \n{e}')
         return {'title':  '', 'url': '', 'content': ''}
 
+def process_article(a):
+    title = a['title']
+    url = 'https://www.gate.io' + a['url']
+    if 'Sale Result' in title or 'Gate.io Startup Free Offering:' in title or 'Gate.io Startup:' in title or 'Initial Free Offering:' in title or 'Gate.io will list' in title:
+        article = scrape_article(url)
+        if not article['title'] == '' and article['content'] == '':
+            try:
+                send_gateio_article_alert(article['title'], ['link'])
+                logging.info('NEW ARTICLE ALERT!')
+            except requests.exceptions.ConnectionError as err:
+                logging.error(f'Error sending an alert: \n{err}')
+        else:
+            exchanges = concat_markets(get_coin_markets(get_gate_coin(article['title'])))
+            try:
+                send_gateio_listing_alert(article, exchanges)
+                logging.info('NEW LISTING ALERT!')
+            except requests.exceptions.ConnectionError as err:
+                logging.error(f'Error sending an alert: \n{err}')
+ 
 def gateio():
-    article_number = int(load_latest_article())
-    times_checked = 0
+    saved_articles, _ = scrape_article_list([])
+    logging.info('Successfully fetched most recent listings/news')
+    sleep(60)
     while(True):
-        if times_checked >= 5:
-            logging.info('Checking next article in case current was deleted...')
-            times_checked = 0
-            temp_article = article_number + 1
-            article = scrape_gateio_article(temp_article)
-        else:
-            article = scrape_gateio_article(article_number)
-        
-        if article['title'] == '':
-            logging.info('No new listing announcements found - retrying in 60 seconds')
-            times_checked += 1
-            sleep(60)
-        else:
-            if article['content'] == '':
-                try:
-                    send_gateio_article_alert(article['title'], ['link'])
-                    logging.info('NEW ARTICLE ALERT!')
-                except requests.exceptions.ConnectionError as err:
-                    logging.error(f'Error sending an alert: \n{err}')
-            else:
-                exchanges = concat_markets(get_coin_markets(get_gate_coin(article['title'])))
-                try:
-                    send_gateio_listing_alert(article, exchanges)
-                    logging.info('NEW LISTING ALERT!')
-                except requests.exceptions.ConnectionError as err:
-                    logging.error(f'Error sending an alert: \n{err}')
-            if times_checked >= 5:
-                article_number += 2
-            else:
-                article_number += 1
-            save_latest_article([article_number])
-            times_checked = 0
-            sleep(5)
+        saved_articles, new_articles = scrape_article_list(saved_articles, initialized=True)
+        for a in new_articles:
+            url = 'https://www.gate.io' + a['url']
+            send_gateio_article_alert(a['title'], url)
+            logging.info('NEW ARTICLE ALERT! Detecting listings in articles...')
+        for a in new_articles:
+            process_article(a)
+            #if there are more articles wait some time before moving onto another
+            sleep(randint(30, 50))
+        timeout = randint(50, 80)
+        logging.info(f'Looking for News/Announcements in {timeout} seconds')
+        sleep(timeout)
