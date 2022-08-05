@@ -1,7 +1,7 @@
 import logging
 import threading
 from time import sleep
-from gate import gateio
+from gate_html import gateio
 from kucoin import kucoin
 #from kucoin import get_kucoin_announcement, kucoin
 from mexc import mexc
