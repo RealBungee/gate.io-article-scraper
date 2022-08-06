@@ -179,6 +179,9 @@ def process_article(a):
                 logging.info('NEW LISTING ALERT!')
             except requests.exceptions.ConnectionError as err:
                 logging.error(f'Error sending an alert: \n{err}')
+    else:
+        send_gateio_article_alert(title, url)
+        logging.info('NEW ARTICLE ALERT! Detecting listings in articles...')
  
 def gateio():
     latest_article = load_latest_article()
@@ -186,12 +189,9 @@ def gateio():
     while(True):
         new_articles = scrape_article_list(latest_article)
         for a in new_articles:
-            url = 'https://www.gate.io' + a['url']
-            send_gateio_article_alert(a['title'], url)
-            logging.info('NEW ARTICLE ALERT! Detecting listings in articles...')
-        for a in new_articles:
             process_article(a)
-            sleep(randint(30, 50))
+            if len(new_articles) > 1:
+                sleep(randint(30, 50))
         latest_article += len(new_articles)
         save_latest_article([latest_article])
         timeout = randint(50, 80)
