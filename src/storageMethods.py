@@ -38,7 +38,7 @@ def load_latest_article():
         reader = csv.reader(myFile)
         for row in reader:
             article_num = row
-    return article_num[0]
+    return int(article_num[0])
 
 # Saves list of tokens on exchange to ./ListingsData
 # e.g save_object(list, "binance_futures")
