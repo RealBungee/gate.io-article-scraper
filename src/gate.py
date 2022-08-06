@@ -9,6 +9,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from http.client import RemoteDisconnected
+from storageMethods import load_latest_article, save_latest_article
 from text_processing import get_coin_abbreviation, get_gate_coin, concat_markets
 from coingecko import get_coin_markets
 from webhook import send_gateio_article_alert, send_gateio_listing_alert
@@ -101,30 +102,27 @@ def get_url(url):
     except (Exception) as e:
         logging.error(f'Exception occured while fetching gateio url: \n{e}')
 
-def scrape_article_list(saved_articles, initialized=False):
+def scrape_article_list(latest_article):
     try:
         url = "https://www.gate.io/articlelist/ann/0"
         response = get_url(url)
         html = BeautifulSoup(response.text, 'html.parser')
         item_list = html.find_all('div', class_='latnewslist')
-        articles = []
         new_articles = []
         for i in item_list:
             title = i.find('h3').text
             url = i.find('a').get('href')
-            if title not in saved_articles and initialized:
-                saved_articles.append(title)
+            article_number = int(url.split('/article/')[1])
+            if article_number > latest_article:
                 new_articles.append({'title': title, 'url': url})
-            articles.append(title)
-        return articles, new_articles
+        return new_articles
     except (RemoteDisconnected, ConnectionError, ProtocolError, Exception) as e:
         logging.error(f'Exception occured while scraping Gate.io: \n{e}')
-        return saved_articles, []
+        return []
 
 def scrape_article(url):
     try:
         response = get_url(url)
-        print(response)
         html = BeautifulSoup(response.content, 'html.parser')
         title = html.find_all('h1')[0].text
         content = html.find('div', class_='dtl-content')
@@ -183,19 +181,21 @@ def process_article(a):
                 logging.error(f'Error sending an alert: \n{err}')
  
 def gateio():
-    saved_articles, _ = scrape_article_list([])
-    logging.info('Successfully fetched most recent listings/news')
-    sleep(60)
+    latest_article = load_latest_article()
+    logging.info('Successfully loaded most recent article number')
     while(True):
-        saved_articles, new_articles = scrape_article_list(saved_articles, initialized=True)
+        new_articles = scrape_article_list(latest_article)
         for a in new_articles:
             url = 'https://www.gate.io' + a['url']
             send_gateio_article_alert(a['title'], url)
             logging.info('NEW ARTICLE ALERT! Detecting listings in articles...')
         for a in new_articles:
             process_article(a)
-            #if there are more articles wait some time before moving onto another
             sleep(randint(30, 50))
+        latest_article += len(new_articles)
+        save_latest_article([latest_article])
         timeout = randint(50, 80)
         logging.info(f'Looking for News/Announcements in {timeout} seconds')
         sleep(timeout)
+
+gateio()
