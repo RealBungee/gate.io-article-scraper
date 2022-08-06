@@ -110,5 +110,6 @@ def kucoin():
                 send_kucoin_listing_alert(a['title'], a['url'], exchanges)
                 logging.info('NEW LISTING ALERT')
         announcements = new_announcements
-        logging.info('Looking for new annoucements in 60 seconds')
-        sleep(60)
+        timeout = random.randint(50, 70)
+        logging.info(f'Looking for new annoucements in {timeout} seconds')
+        sleep(timeout)
