@@ -197,5 +197,3 @@ def gateio():
         timeout = randint(50, 80)
         logging.info(f'Looking for News/Announcements in {timeout} seconds')
         sleep(timeout)
-
-gateio()

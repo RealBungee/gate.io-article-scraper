@@ -1,8 +1,9 @@
 import logging
 import threading
 from time import sleep
-from kucoin import kucoin
 from mexc import mexc
+from kucoin import kucoin
+from gate import gateio
 from twitter import twitter
 from storageMethods import update_futures_listings
 
