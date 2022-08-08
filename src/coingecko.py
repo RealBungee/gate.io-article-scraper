@@ -4,6 +4,30 @@ from requests.exceptions import HTTPError, ConnectionError
 
 cg = CoinGeckoAPI()
 
+# res = get_coin(coin)
+#     if res != '':
+#         coin = { 'name': res['name'], 'id': res['id'], 'market_cap': res['market_cap']['usd']}
+#         coins.append(coin)
+#     if i % 49 == 0:
+#         print('Sleeping...')
+#         sleep(62)
+
+def get_listed_coins():
+    try:
+        res = cg.get_coins_list(include_platform=False)
+        return res
+    except (ValueError, HTTPError, ConnectionError, Exception) as err:
+        logging.error(f'Error Fetching Coin Information From Coingecko! \n{err}')
+    return []
+
+def get_coin(coin):
+    try:
+        res = cg.get_coin_by_id(id=coin, community_data = 'false', tickers = 'true', developer_data = 'false', sparkline = 'false', localization = 'false')
+        return res
+    except (ValueError, HTTPError, ConnectionError, Exception) as err:
+        logging.error(f'Error Fetching Coin Information From Coingecko! \n{err}')
+    return ''
+
 def get_coin_markets(coin):
     if coin == '':
         return 'No markets available'
