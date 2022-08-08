@@ -50,3 +50,8 @@ def send_tweet_alert(user, url):
     content = f'New tweet from {user}:\n{url}'
     webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
     webhook.execute()
+
+def send_gateio_trade_alert(content):
+    webhook_url = 'https://discord.com/api/webhooks/1006154058681290783/gfjFp7a5CRaX-aR4Nj-pdecVzoeg4t4aIYH0oiNP3mSzB6dFqMSMoqj-IcjSa1sXblEC'
+    webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
+    webhook.execute()
