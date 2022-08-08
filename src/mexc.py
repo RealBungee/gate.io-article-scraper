@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from time import sleep
 from xmlrpc.client import ProtocolError
 from http.client import RemoteDisconnected
+from requests.exceptions import SSLError
 from coingecko import get_coin_markets
 from text_processing import get_mexc_coin, concat_markets
 from webhook import send_mexc_article_alert, send_mexc_listing_alert
@@ -14,9 +15,8 @@ def scrape_mexc(url, saved_articles, initialized=True):
     try:
         res = scraper.get(url)
         if res.status_code != 200: return saved_articles, []
-        res = res.text
 
-        html = BeautifulSoup(res, 'html.parser')
+        html = BeautifulSoup(res.text, 'html.parser')
         items = html.find_all('li', class_='article-list-item article-promoted')
         new_articles = []
         article_list = []
@@ -28,7 +28,7 @@ def scrape_mexc(url, saved_articles, initialized=True):
                 saved_articles.append(article)
             article_list.append(article)  
         return article_list, new_articles
-    except (RemoteDisconnected, ConnectionError, ProtocolError, Exception) as e:
+    except (RemoteDisconnected, ConnectionError, ProtocolError, SSLError, Exception) as e:
         logging.exception('Exception while scraping mexc: ', e)
         return saved_articles, []
     

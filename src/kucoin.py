@@ -3,6 +3,9 @@ import requests
 import random
 import time
 import string
+from requests.exceptions import SSLError
+from http.client import RemoteDisconnected
+from xmlrpc.client import ProtocolError
 from time import sleep
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -33,26 +36,6 @@ def scrape_listings(link, articles=[], initialized=False):
         logging.exception(f'Error finding article: {ex}')
         driver.quit()
         return [], articles 
-
-# def kucoin():
-#     listings_link = 'https://www.kucoin.com/news/categories/listing'
-#     initialized = False
-#     saved_listings = scrape_listings(listings_link, initialized=initialized)
-#     while(True):
-#         released_articles, saved_listings = scrape_listings(listings_link, saved_listings, initialized)
-#         if not initialized: initialized = True
-#         for a in released_articles:
-#             try:
-#                 coin =  get_mexc_coin(a['title'])
-#             except IndexError as err:
-#                 print('Index error: ', err)
-#             exchanges = concat_markets(get_coin_markets(coin))
-#             send_kucoin_listing_alert(a['title'], a['url'], exchanges)
-#             logging.info('NEW LISTING ALERT')
-#         logging.info('Looking for News in 60 seconds')
-#         logging.info('Looking for new annoucements in 60 seconds')
-#         sleep(60)
-
 
 def get_kucoin_announcement():
     """
@@ -98,7 +81,7 @@ def kucoin():
     while(True):
         try:
             new_announcements = get_kucoin_announcement()
-        except (ConnectionResetError, Exception) as e:
+        except (RemoteDisconnected, ConnectionError, ProtocolError, SSLError, Exception) as e:
             logging.exception(f'Error fetching new annoucements: {e}')
         for a in new_announcements:
             if a not in announcements:

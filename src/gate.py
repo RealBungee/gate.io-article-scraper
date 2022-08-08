@@ -130,10 +130,10 @@ def scrape_article(url):
         if title == 'not permitted' or 'no article!' in title or title == '': return {'title':  '', 'url': '', 'content': ''}
 
         if 'Sale Result' in title:
-            coin = get_coin_abbreviation(title)
+            coin = get_coin_abbreviation(title).lower()
             content = content.find_all('span')
             for c in content:
-                if f'We will commence {coin} trading' in c.text:
+                if f'we will commence {coin} trading' in c.text.lower():
                     content = c.text
                     break
             content = content.split('.')
@@ -144,7 +144,7 @@ def scrape_article(url):
             coin = get_coin_abbreviation(title)
             content = content.find_all('br')
             for c in content:
-                if f'Trading starts' in c.text:
+                if f'trading starts' in c.text.lower():
                     content = c.text
                     break
             content = content.split('Trading starts ')
