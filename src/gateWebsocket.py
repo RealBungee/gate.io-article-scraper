@@ -10,10 +10,6 @@ import time
 from websocket import WebSocketApp
 from webhook import send_gateio_trade_alert
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-
 class GateWebSocketApp(WebSocketApp):
 
     def __init__(self, url, api_key, api_secret, **kwargs):
@@ -28,7 +24,7 @@ class GateWebSocketApp(WebSocketApp):
                 try:
                     self.sock.ping()
                 except Exception as ex:
-                    logger.warning("send_ping routine terminated: {}".format(ex))
+                    logging.warning("send_ping routine terminated: {}".format(ex))
                     break
                 try:
                     self._request("spot.ping", auth_required=False)
@@ -51,7 +47,7 @@ class GateWebSocketApp(WebSocketApp):
                 "SIGN": self.get_sign(message),
             }
         data = json.dumps(data)
-        logger.info('request: %s', data)
+        logging.info('request: %s', data)
         self.send(data)
 
     def get_sign(self, message):
@@ -74,25 +70,36 @@ def on_message(ws, message):
         amount = float(message['result']['amount'])
         price = float(message['result']['price'])
         side = message['result']['side']
-        dollar_amount = amount * price
+        dollar_amount = round(amount * price, 2)
         if side == 'buy':
             side = 'bought'
         else:
             side = 'sold'
-        if dollar_amount > 5000:
-            content = f'```Someone {side} {dollar_amount} of {pair} for {price}.```'
+        if dollar_amount > 2000:
+            content = f'```Someone {side} ${dollar_amount} of {pair} at {price}.```'
+            if dollar_amount > 10000:
+                content += '@everyone'
             send_gateio_trade_alert(content)
     except Exception as e:
-        logger.error(e)
-    logger.info("message received from server: {}".format(message))
+        logging.error(e)
+    logging.info("message received from server: {}".format(message))
 
 
 def on_open(ws):
     # type: (GateWebSocketApp) -> None
     # subscribe to channels interested
-    logger.info('websocket connected')
-    ws.subscribe("spot.trades", ['BTC_USDT'], False)
-
+    logging.info('websocket connected')
+    f = open('./Data/shitcoins.json')
+    coins = json.load(f)
+    global ticker
+    global working_endpoints
+    global failed_endpoints
+    working_endpoints = []
+    failed_endpoints =[]
+    for c in coins:
+        ticker = c['symbol'].upper() + '_USDT'
+        logging.info(f'Testing ticker: {ticker}')
+        ws.subscribe("spot.trades", [ticker], False)
 
 if __name__ == "__main__":
     logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.DEBUG)

@@ -11,6 +11,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from http.client import RemoteDisconnected
+from gateWebsocket import GateWebSocketApp, on_message, on_open
 from gatePI import get_gateio_listed_coins
 from storageMethods import load_latest_article, save_latest_article
 from text_processing import get_coin_abbreviation, get_gate_coin, concat_markets
@@ -118,7 +119,6 @@ def filter_coins_by_mc():
             if mc > 250000000 and mc < 1100000000:
                 low_caps.append(c)
         except KeyError as e:
-            #coins.pop(i)
             print(f'Error: {e}')
     print(len(shitcoins))
     with open('./Data/shitcoins.json', 'w') as f:
@@ -214,7 +214,7 @@ def scrape_article(url):
             content = content.find_all('strong')
             content = content[0].text
             return {'title':  title, 'url': url, 'content': content}
-    except (AttributeError, requests.ConnectionError, Exception) as e:
+    except (AttributeError, requests.exceptions.ConnectionError, Exception) as e:
         logging.exception(f'Exception while scraping gateio: \n{e}')
         return {'title':  '', 'url': '', 'content': ''}
 
@@ -254,3 +254,11 @@ def gateio():
         timeout = randint(50, 80)
         logging.info(f'Looking for News/Announcements in {timeout} seconds')
         sleep(timeout)
+
+def start_websocket():
+    app = GateWebSocketApp("wss://api.gateio.ws/ws/v4/",
+        "BB1A0403-D004-473C-B972-CD1CBC19FFBC",
+        "dcaabe74c365de13b411a3abf255d12f54016a76c8a3f5ecc1b895367606df6c",
+        on_message=on_message,
+        on_open=on_open)
+    app.run_forever(ping_interval=5)
