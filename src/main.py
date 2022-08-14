@@ -3,7 +3,7 @@ import threading
 from time import sleep
 from mexc import mexc
 from kucoin import kucoin
-from gate import gateio
+from gate import gateio, start_gateio_websocket
 from twitter import twitter
 from storageMethods import update_futures_listings
 
@@ -21,18 +21,15 @@ def main():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(threadName)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
     g = threading.Thread(target=gateio)
     m = threading.Thread(target=mexc)
-    t = threading.Thread(target=twitter)
     k = threading.Thread(target=kucoin)
+    gw = threading.Thread(target=start_gateio_websocket)
     #futures = threading.Thread(target=check_for_futures_updates)
 
     logging.info('Starting threads')
-    g.start()
-    k.start()
-    logging.info('Gate.io scraper started')
-    m.start()
-    logging.info('Mexc scraper started')
-    sleep(5)
-    t.start()
+    #g.start()
+    #k.start()
+    #m.start()
     #futures.start()
+    gw.start()
     
 main()
