@@ -82,8 +82,6 @@ def on_message(ws, message):
             send_gateio_trade_alert(content)
     except Exception as e:
         logging.error(e)
-    logging.info("message received from server: {}".format(message))
-
 
 def on_open(ws):
     # type: (GateWebSocketApp) -> None
@@ -98,14 +96,4 @@ def on_open(ws):
     failed_endpoints =[]
     for c in coins:
         ticker = c['symbol'].upper() + '_USDT'
-        logging.info(f'Testing ticker: {ticker}')
         ws.subscribe("spot.trades", [ticker], False)
-
-if __name__ == "__main__":
-    logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.DEBUG)
-    app = GateWebSocketApp("wss://api.gateio.ws/ws/v4/",
-                           "BB1A0403-D004-473C-B972-CD1CBC19FFBC",
-                           "dcaabe74c365de13b411a3abf255d12f54016a76c8a3f5ecc1b895367606df6c",
-                           on_open=on_open,
-                           on_message=on_message)
-    app.run_forever(ping_interval=5)

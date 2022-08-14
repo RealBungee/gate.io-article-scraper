@@ -255,7 +255,7 @@ def gateio():
         logging.info(f'Looking for News/Announcements in {timeout} seconds')
         sleep(timeout)
 
-def start_websocket():
+def start_gateio_websocket():
     app = GateWebSocketApp("wss://api.gateio.ws/ws/v4/",
         "BB1A0403-D004-473C-B972-CD1CBC19FFBC",
         "dcaabe74c365de13b411a3abf255d12f54016a76c8a3f5ecc1b895367606df6c",
