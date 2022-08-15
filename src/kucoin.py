@@ -1,3 +1,4 @@
+import json
 import logging
 import requests
 import random
@@ -10,6 +11,7 @@ from time import sleep
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
+from kucoinWebsocket import KucoinWebSocketApp, on_message, on_open
 from text_processing import get_mexc_coin, concat_markets
 from coingecko import get_coin_markets
 from webhook import send_kucoin_listing_alert
@@ -35,7 +37,7 @@ def scrape_listings(link, articles=[], initialized=False):
     except (NoSuchElementException, WebDriverException, Exception) as ex:
         logging.exception(f'Error finding article: {ex}')
         driver.quit()
-        return [], articles 
+        return [], articles
 
 def get_kucoin_announcement():
     """
@@ -96,3 +98,14 @@ def kucoin():
         timeout = random.randint(50, 70)
         logging.info(f'Looking for new annoucements in {timeout} seconds')
         sleep(timeout)
+
+def start_kucoin_websocket():
+    res = requests.post('https://api.kucoin.com/api/v1/bullet-public')
+    data = json.loads(res.text)
+    public_token = data['data']['token']
+    connect_id = 12345
+    websocket_url = f'wss://ws-api.kucoin.com/endpoint?token={public_token}&[connectId={connect_id}]'
+    app = KucoinWebSocketApp(websocket_url,'', '',
+                           on_open=on_open,
+                           on_message=on_message)
+    app.run_forever(ping_interval=5)

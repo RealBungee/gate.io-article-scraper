@@ -57,6 +57,6 @@ def send_gateio_trade_alert(content):
     webhook.execute()
 
 def send_kucoin_trade_alert(content):
-    webhook_url = 'https://discord.com/api/webhooks/1008373350873170041/eUfcLGp6O6zd_LqErImXz5hacdcA0KIiGGva4hBaHPxt1vLlyeDvPLoYLBoRUWwpA9rc'
+    webhook_url = 'https://discord.com/api/webhooks/1008802996878065774/dnZoqZPLs0ueVS5LRi7cQN40zJ4Ia8pw543QIXI0iCW0bOHTj__Lf4sMM8RZXu46vbmZ'
     webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
     webhook.execute()

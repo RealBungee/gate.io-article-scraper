@@ -2,7 +2,7 @@ import logging
 import threading
 from time import sleep
 from mexc import mexc
-from kucoin import kucoin
+from kucoin import kucoin, start_kucoin_websocket
 from gate import gateio, start_gateio_websocket
 from twitter import twitter
 from storageMethods import update_futures_listings
@@ -23,6 +23,7 @@ def main():
     m = threading.Thread(target=mexc)
     k = threading.Thread(target=kucoin)
     gw = threading.Thread(target=start_gateio_websocket)
+    kw = threading.Thread(target=start_kucoin_websocket)
     #futures = threading.Thread(target=check_for_futures_updates)
 
     logging.info('Starting threads')
@@ -30,6 +31,7 @@ def main():
     #k.start()
     #m.start()
     #futures.start()
-    gw.start()
+    #gw.start()
+    kw.start()
     
 main()
