@@ -2,3 +2,7 @@ discord_webhook==0.16.3
 pycoingecko==2.2.0
 requests==2.25.1
 selenium==4.3.0
+cloudscraper
+bs4
+websocket_client
+gate_api
