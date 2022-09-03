@@ -10,7 +10,24 @@ from coingecko import get_coin_markets
 from text_processing import get_mexc_coin, concat_markets
 from webhook import send_mexc_article_alert, send_mexc_listing_alert
 
-def scrape_mexc(url, saved_articles, initialized=True):
+def initialize_articles(url):
+    scraper = cloudscraper.create_scraper(delay=10, browser='chrome')
+    try:
+        res = scraper.get(url)
+        if res.status_code != 200: return []
+
+        html = BeautifulSoup(res.text, 'html.parser')
+        items = html.find_all('li', class_='article-list-item article-promoted')
+        new_articles = []
+        for i in items:
+            article = i.find('a').text
+            new_articles.append(article) 
+        return new_articles
+    except (RemoteDisconnected, ConnectionError, ProtocolError, SSLError, Exception) as e:
+        logging.exception('Exception while scraping mexc: ', e)
+        return []
+
+def scrape_mexc(url, saved_articles):
     scraper = cloudscraper.create_scraper(delay=10, browser='chrome')
     try:
         res = scraper.get(url)
@@ -19,26 +36,27 @@ def scrape_mexc(url, saved_articles, initialized=True):
         html = BeautifulSoup(res.text, 'html.parser')
         items = html.find_all('li', class_='article-list-item article-promoted')
         new_articles = []
-        article_list = []
         for i in items:
             article = i.find('a').text
-            if article not in saved_articles and initialized:
+            if article not in saved_articles:
                 url = 'https://support.mexc.com/' + i.find('a').get('href')
                 new_articles.append({ 'title': article, 'url': url})
-                saved_articles.append(article)
-            article_list.append(article)  
-        return article_list, new_articles
+                saved_articles.append(article) 
+        return saved_articles, new_articles
     except (RemoteDisconnected, ConnectionError, ProtocolError, SSLError, Exception) as e:
         logging.exception('Exception while scraping mexc: ', e)
         return saved_articles, []
-    
+
 def mexc():
+    initialized = False
     listing_url = 'https://support.mexc.com/hc/en-001/sections/360000547811-New-Listings'
     news_url = 'https://support.mexc.com/hc/en-001/sections/360000679912-Latest-News'
-    saved_listings, _ =  scrape_mexc(listing_url, [], False)
-    saved_news, _= scrape_mexc(news_url, [], False)
-    logging.info('Successfully fetched most recent listings/news')
+    saved_listings = initialize_articles(listing_url)
+    saved_news = initialize_articles(news_url)
+    if len(saved_listings) > 1 and len(saved_news) > 1:
+        initialized = True
     sleep(60)
+    fetch_count = 0
     while(True):
         saved_listings, new_articles = scrape_mexc(listing_url, saved_listings)
         for a in new_articles:
@@ -50,9 +68,16 @@ def mexc():
         for a in new_articles:
             send_mexc_article_alert(a['title'], a['url'])
             logging.info('NEWS ALERT')
-        timeout = randint(50, 80)
-        logging.info(f'Looking for News/Announcements in {timeout} seconds')
-        sleep(timeout)
+        fetch_count += 1
+        if fetch_count >= 5 or not initialized:
+            sleep(30)
+            logging.info('Re-initializing existing article list')
+            saved_listings = initialize_articles(listing_url)
+            saved_news = initialize_articles(news_url)
+            fetch_count = 0
+        if len(saved_listings) > 1 and len(saved_news) > 1:
+            initialized = True    
+        sleep(randint(50, 80))
 
 # def load_mexc_articles(link):
 #     options = webdriver.ChromeOptions()
