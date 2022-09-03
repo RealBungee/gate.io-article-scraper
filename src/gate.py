@@ -159,6 +159,11 @@ def get_url(url):
     except (Exception) as e:
         logging.error(f'Exception occured while fetching gateio url: \n{e}')
 
+def get_article_number(url):
+    article_number = url.split('article/')
+    article_number = int(article_number[1])
+    return article_number
+
 def scrape_article_list(latest_article):
     try:
         url = "https://www.gate.io/articlelist/ann/0"
@@ -215,7 +220,8 @@ def scrape_article(url):
             content = content[0].text
             return {'title':  title, 'url': url, 'content': content}
     except (AttributeError, requests.exceptions.ConnectionError, Exception) as e:
-        logging.exception(f'Exception while scraping gateio: \n{e}')
+        article_number = get_article_number(url)
+        logging.exception(f'Exception while scraping article {article_number} on gateio: \n{e}')
         return {'title':  '', 'url': '', 'content': ''}
 
 def process_article(a):
@@ -245,12 +251,13 @@ def gateio():
     logging.info('Successfully loaded most recent article number')
     while(True):
         new_articles = scrape_article_list(latest_article)
-        for a in new_articles:
+        if len(new_articles) > 1:
+            latest_article = get_article_number(new_articles[0]['url'])
+            save_latest_article([latest_article])
+        for a in reversed(new_articles):
             process_article(a)
             if len(new_articles) > 1:
                 sleep(randint(30, 50))
-        latest_article += len(new_articles)
-        save_latest_article([latest_article])
         timeout = randint(50, 80)
         logging.info(f'Looking for News/Announcements in {timeout} seconds')
         sleep(timeout)
