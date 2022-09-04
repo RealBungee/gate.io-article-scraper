@@ -251,7 +251,7 @@ def gateio():
     logging.info('Successfully loaded most recent article number')
     while(True):
         new_articles = scrape_article_list(latest_article)
-        if len(new_articles) > 1:
+        if len(new_articles) > 0:
             latest_article = get_article_number(new_articles[0]['url'])
             save_latest_article([latest_article])
         for a in reversed(new_articles):
