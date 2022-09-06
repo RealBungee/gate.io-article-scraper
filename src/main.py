@@ -31,7 +31,7 @@ def main():
     k.start()
     m.start()
     futures.start()
-    gw.start()
-    kw.start()
+    #gw.start()
+    #kw.start()
     
 main()
