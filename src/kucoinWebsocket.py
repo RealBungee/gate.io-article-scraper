@@ -11,7 +11,7 @@ import requests
 from websocket import WebSocketApp
 from webhook import send_kucoin_trade_alert
 
-class KucoinWebSocketApp(WebSocketApp):
+class KucoinWebSocketApp(WebSocketApp, coins):
 
     def __init__(self, url, api_key, api_secret, **kwargs):
         super(KucoinWebSocketApp, self).__init__(url, **kwargs)
