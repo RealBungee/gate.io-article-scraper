@@ -10,6 +10,7 @@ import requests
 
 from websocket import WebSocketApp
 from webhook import send_kucoin_trade_alert
+#Just define the Queue in some outside file and call it from there instead of doing a circle import
 
 class KucoinWebSocketApp(WebSocketApp, coins):
 
