@@ -12,7 +12,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from kucoinWebsocket import KucoinWebSocketApp, on_message, on_open
-from websocket import WebSocketApp
 from text_processing import get_mexc_coin, concat_markets
 from coingecko import get_coin_markets
 from webhook import send_kucoin_listing_alert
@@ -106,8 +105,7 @@ def start_kucoin_websocket():
     public_token = data['data']['token']
     connect_id = 12345
     websocket_url = f'wss://ws-api.kucoin.com/endpoint?token={public_token}&[connectId={connect_id}]'
-    socket = WebSocketApp(websocket_url,'', '',
+    app = KucoinWebSocketApp(websocket_url,'', '',
                            on_open=on_open,
                            on_message=on_message)
-    app = KucoinWebSocketApp(socket, ["JASMY_USDT", "BTC_USDT"])
     app.run_forever(ping_interval=5)
