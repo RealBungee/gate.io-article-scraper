@@ -30,8 +30,8 @@ def main():
     g.start()
     k.start()
     m.start()
-    futures.start()
     gw.start()
-    #kw.start()
+    kw.start()
+    futures.start()
     
 main()
