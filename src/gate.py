@@ -207,9 +207,9 @@ def scrape_article(url):
             content = content.find_all('br')
             for c in content:
                 if f'trading starts' in c.text.lower():
-                    content = c.text
+                    content = c.text.lower()
                     break
-            content = content.split('Trading starts ')
+            content = content.split('trading starts ')
             content = content[1].split(',')
             content = 'Trading starts ' + content[0]
             content += ' UTC'

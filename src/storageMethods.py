@@ -2,12 +2,12 @@ import csv
 import logging
 import pickle
 import sys
-sys.path.append('../gate.io-article-scraper')
 import json
 import os
 from definitions import ROOT_DIR
 from coingecko import get_all_futures_coins
 from webhook import send_perp_listing_alert, send_perp_delisting_alert
+sys.path.append('../gate.io-article-scraper')
 
 #used to load the original config file
 def load_scrapeData_file():
