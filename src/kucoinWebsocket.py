@@ -50,20 +50,21 @@ def on_message(ws, message):
     # handle whatever message you received
     message = json.loads(message)
     try:
-        pair = message['data']['symbol']
-        amount = float(message['data']['size'])
-        price = float(message['data']['price'])
-        side = message['data']['side']
-        dollar_amount = round(amount * price, 2)
-        if side == 'buy':
-            side = 'bought'
-        else:
-            side = 'sold'
-        if dollar_amount > 1000:
-            content = f'```Someone {side} ${dollar_amount} of {pair} at {price}.```'
-            if dollar_amount > 10000:
-                content += '@everyone'
-            send_kucoin_trade_alert(content)
+        if 'data' in message:
+            pair = message['data']['symbol']
+            amount = float(message['data']['size'])
+            price = float(message['data']['price'])
+            side = message['data']['side']
+            dollar_amount = round(amount * price, 2)
+            if side == 'buy':
+                side = 'bought'
+            else:
+                side = 'sold'
+            if dollar_amount > 1000:
+                content = f'```Someone {side} ${dollar_amount} of {pair} at {price}.```'
+                if dollar_amount > 10000:
+                    content += '@everyone'
+                send_kucoin_trade_alert(content)
     except Exception as e:
         logging.error(e)
     #logging.info("message received from server: {}".format(message))
