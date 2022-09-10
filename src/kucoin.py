@@ -74,7 +74,7 @@ def get_kucoin_announcement():
 
         latest_announcement = latest_announcement.json()
         logging.debug("Finished pulling announcement page")
-        return latest_announcement["items"][0]["title"]
+        return latest_announcement["items"][0]
     else:
         logging.error(f"Error pulling kucoin announcement page: {latest_announcement.status_code}")
         return ""
@@ -83,19 +83,19 @@ def kucoin():
     announcements = get_kucoin_announcement()
     while(True):
         try:
-            new_announcements = get_kucoin_announcement()
+            new_announcement = get_kucoin_announcement()
         except (RemoteDisconnected, ConnectionError, ProtocolError, SSLError, Exception) as e:
             logging.exception(f'Error fetching new annoucements: {e}')
-        for a in new_announcements:
-            if a not in announcements:
-                try:
-                    coin =  get_mexc_coin(a['title'])
-                except IndexError as err:
-                    print('Index error: ', err)
-                exchanges = concat_markets(get_coin_markets(coin))
-                send_kucoin_listing_alert(a['title'], a['url'], exchanges)
-                logging.info('NEW LISTING ALERT')
-        announcements = new_announcements
+        if new_announcement != announcements:
+            try:
+                coin =  get_mexc_coin(new_announcement['title'])
+            except IndexError as err:
+                print('Index error: ', err)
+            exchanges = concat_markets(get_coin_markets(coin))
+            url = 'https://www.kucoin.com/news'+ new_announcement['path']
+            send_kucoin_listing_alert(new_announcement['title'], url, exchanges)
+            logging.info('NEW LISTING ALERT')
+        announcements = new_announcement
         timeout = random.randint(50, 70)
         logging.info(f'Looking for new annoucements in {timeout} seconds')
         sleep(timeout)
