@@ -6,11 +6,9 @@ import hmac
 import json
 import logging
 import time
-import requests
-
 from websocket import WebSocketApp
 from webhook import send_kucoin_trade_alert
-#Just define the Queue in some outside file and call it from there instead of doing a circle import
+from webSocketQueue import getTicker
 
 class KucoinWebSocketApp(WebSocketApp):
 
@@ -61,39 +59,19 @@ def on_message(ws, message):
             side = 'bought'
         else:
             side = 'sold'
-        if dollar_amount > 2000:
+        if dollar_amount > 1000:
             content = f'```Someone {side} ${dollar_amount} of {pair} at {price}.```'
             if dollar_amount > 10000:
                 content += '@everyone'
             send_kucoin_trade_alert(content)
     except Exception as e:
         logging.error(e)
-    logging.info("message received from server: {}".format(message))
+    #logging.info("message received from server: {}".format(message))
 
 def on_open(ws):
-    # type: (KucoinWebSocketApp) -> None
-    # subscribe to channels interested
-    logging.info('websocket connected')
-    listed_coins = get_listed_coins()
-    f = open('./Data/shitcoins.json')
-    coins = json.load(f)
-    tickers = []
     subscribe = '/market/match:JASMY-USDT'
-    for c in coins:
-        ticker = c['symbol'].upper() + '-USDT'
-        tickers.append(ticker)
-    logging.info('Filtering coins')
-    result = list(filter(lambda x: x in listed_coins, tickers))
-    for c in result:
-        subscribe += ','+c
+    for _ in range(0, 100):
+        ticker = getTicker()
+        subscribe += ',' + ticker
     ws.subscribe(subscribe)
     #ws.subscribe('/market/match:JASMY-USDT,AGLD-USDT,SOL-USDT,SHIB-USDT')
-
-def get_listed_coins():
-    url = 'https://api.kucoin.com/api/v1/symbols'
-    res = json.loads(requests.get(url).text)
-    coins = []
-    for c in res['data']:
-        if c['quoteCurrency'] == 'USDT':
-            coins.append(c['symbol'])
-    return coins

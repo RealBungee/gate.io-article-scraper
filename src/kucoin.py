@@ -15,6 +15,7 @@ from kucoinWebsocket import KucoinWebSocketApp, on_message, on_open
 from text_processing import get_mexc_coin, concat_markets
 from coingecko import get_coin_markets
 from webhook import send_kucoin_listing_alert
+from webSocketQueue import addTicker
 
 def scrape_listings(link, articles=[], initialized=False):
     options = webdriver.ChromeOptions()
@@ -99,7 +100,31 @@ def kucoin():
         logging.info(f'Looking for new annoucements in {timeout} seconds')
         sleep(timeout)
 
+def get_listed_coins():
+    url = 'https://api.kucoin.com/api/v1/symbols'
+    res = json.loads(requests.get(url).text)
+    coins = []
+    for c in res['data']:
+        if c['quoteCurrency'] == 'USDT':
+            coins.append(c['symbol'])
+    return coins
+
 def start_kucoin_websocket():
+    listed_coins = get_listed_coins()
+    f = open('./Data/shitcoins.json')
+    coins = json.load(f)
+    tickers = []
+    for c in coins:
+        ticker = c['symbol'].upper() + '-USDT'
+        tickers.append(ticker)
+    logging.info('Filtering coins')
+    result = list(filter(lambda x: x in listed_coins, tickers))
+    
+    websocket_instance_count = 0
+    for index, ticker in enumerate(result):
+        if index != 0 and index % 100 == 0:
+            websocket_instance_count += 1
+        addTicker(ticker)
     res = requests.post('https://api.kucoin.com/api/v1/bullet-public')
     data = json.loads(res.text)
     public_token = data['data']['token']
