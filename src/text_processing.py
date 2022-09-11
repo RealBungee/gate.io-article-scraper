@@ -12,65 +12,72 @@ def get_gate_coin(title):
     try:
         title = title.lower()
         if 'startup' in title:
-            coin = title.split(':')
-            coin = coin[1].split('(')
-            if 'coin' in coin[0]:
-                coin  = coin[0].replace(' ', '')
-            else:
-                coin = coin[0]
+            tmp = title.split(':')
+            tmp = tmp[1].split('(')
+            tmp = tmp[0]
             title = ''
         if '(' in title:
-            coin = title.split('will list ')
-            coin = coin[1].split('(')
-            coin = coin[0]
+            tmp = title.split('will list ')
+            tmp = tmp[1].split('(')
+            tmp = tmp[0]
             title = ''
-        coin = coin.replace(' ', '')
-        print(coin)
+        tmp = tmp.split(' ')
+        coin = ''
+        for i, c in enumerate(tmp):
+            if c != '':
+                coin += c 
+                if i != len(tmp):
+                    coin += ' '
+        logging.info(f'Extracted coin name: {coin} from title...')
         return coin
     except Exception as e:
         logging.error(f'Error extracting coin name from title: \n{e}')
         return ''
 
 def get_mexc_coin(title):
-    print('Title: ', title)
     try:
         title = title.lower()
         if 'listing arrangement' in title:
-            coin = title.split('for')
-            coin = coin[1].split('(')
-            coin = coin[0]
+            tmp = title.split('for')
+            tmp = tmp[1].split('(')
+            tmp = tmp[0]
             title = ''
         if '(' in title:
             if 'new m-day' in title:
-                coin = title.split('new m-day')
-                coin = coin[1].split('(')
-                coin = coin[0]
+                tmp = title.split('new m-day')
+                tmp = tmp[1].split('(')
+                tmp = tmp[0]
             elif 'trading contest' in title:
-                coin = title.split('trading contest with')
-                coin = coin[1].split('(')
-                coin = coin[0]
+                tmp = title.split('trading contest with')
+                tmp = tmp[1].split('(')
+                tmp = tmp[0]
             elif 'contract swap' in title:
-                coin = title.split('the ')
-                coin = coin[1].split('(')
-                coin = coin[0]
+                tmp = title.split('the ')
+                tmp = tmp[1].split('(')
+                tmp = tmp[0]
             elif 'resumption' in title:
-                coin = title.split('for ')
-                coin = coin[1].split('(')
-                coin = coin[0]
+                tmp = title.split('for ')
+                tmp = tmp[1].split('(')
+                tmp = tmp[0]
             else:
-                coin = title.split('will list')
-                coin = coin[1].split('(')
-                coin = coin[0]
+                tmp = title.split('will list')
+                tmp = tmp[1].split('(')
+                tmp = tmp[0]
             title = ''
         elif '-' in title:
-            coin = title.split('-')
-            coin = coin[1].split('in the')
-            coin = coin[0]
+            tmp = title.split('-')
+            tmp = tmp[1].split('in the')
+            tmp = tmp[0]
         else:
-            coin = ''
-
-        coin = coin.replace(' ', '')
-        print('Printing coin: ', coin)
+            tmp = ''
+        tmp.split(' ')
+        coin = ''
+        for i, c in enumerate(tmp):
+            if c != '':
+                coin += c 
+                if i != len(tmp):
+                    coin += ' '
+        logging.info(f'Extracted coin name: {coin} from {title}')
         return coin
     except Exception as e:
         logging.error(f'Error extracting coin from title: \n{e}')

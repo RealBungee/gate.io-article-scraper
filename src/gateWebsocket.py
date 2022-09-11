@@ -66,20 +66,21 @@ def on_message(ws, message):
     # handle whatever message you received
     message = json.loads(message)
     try:
-        pair = message['result']['currency_pair']
-        amount = float(message['result']['amount'])
-        price = float(message['result']['price'])
-        side = message['result']['side']
-        dollar_amount = round(amount * price, 2)
-        if side == 'buy':
-            side = 'bought'
-        else:
-            side = 'sold'
-        if dollar_amount > 2000:
-            content = f'```Someone {side} ${dollar_amount} of {pair} at {price}.```'
-            if dollar_amount > 10000:
-                content += '@everyone'
-            send_gateio_trade_alert(content)
+        if 'currency_pair' in message['result']:
+            pair = message['result']['currency_pair']
+            amount = float(message['result']['amount'])
+            price = float(message['result']['price'])
+            side = message['result']['side']
+            dollar_amount = round(amount * price, 2)
+            if side == 'buy':
+                side = 'bought'
+            else:
+                side = 'sold'
+            if dollar_amount > 2000:
+                content = f'```Someone {side} ${dollar_amount} of {pair} at {price}.```'
+                if dollar_amount > 10000:
+                    content += '@everyone'
+                send_gateio_trade_alert(content)
     except Exception as e:
         logging.error(e)
 
