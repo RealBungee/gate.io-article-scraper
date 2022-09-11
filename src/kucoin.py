@@ -130,7 +130,5 @@ def start_kucoin_websocket():
     public_token = data['data']['token']
     connect_id = 12345
     websocket_url = f'wss://ws-api.kucoin.com/endpoint?token={public_token}&[connectId={connect_id}]'
-    app = KucoinWebSocketApp(websocket_url,'', '',
-                           on_open=on_open,
-                           on_message=on_message)
+    app = KucoinWebSocketApp(websocket_url,'', '', on_open=on_open, on_message=on_message)
     app.run_forever(ping_interval=5)
