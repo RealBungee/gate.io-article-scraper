@@ -8,6 +8,25 @@ def get_coin_abbreviation(title):
         coin = coin[0].upper()
     return coin
 
+def remove_spaces(text):
+    res = text.split(' ')
+    str = ''
+    for i, r in enumerate(res):
+        if r != '':
+            str += r 
+            if (i + 1 < len(res)) and res[i + 1] != '':
+                str += ' '
+    str = str.split(' ')
+    if 'coin' in str[-1]:
+        str[-1] = ''
+    coin = ''
+    for i, r in enumerate(str):
+        if r != '':
+            coin += r 
+            if (i + 1 < len(str)) and str[i + 1] != '':
+                coin += ' '
+    return coin
+
 def get_gate_coin(title):
     try:
         title = title.lower()
@@ -21,13 +40,7 @@ def get_gate_coin(title):
             tmp = tmp[1].split('(')
             tmp = tmp[0]
             title = ''
-        tmp = tmp.split(' ')
-        coin = ''
-        for i, c in enumerate(tmp):
-            if c != '':
-                coin += c 
-                if i != len(tmp):
-                    coin += ' '
+        coin = remove_spaces(tmp)
         logging.info(f'Extracted coin name: {coin} from title...')
         return coin
     except Exception as e:
@@ -70,13 +83,7 @@ def get_mexc_coin(title):
             tmp = tmp[0]
         else:
             tmp = ''
-        tmp.split(' ')
-        coin = ''
-        for i, c in enumerate(tmp):
-            if c != '':
-                coin += c 
-                if i != len(tmp):
-                    coin += ' '
+        coin = remove_spaces(tmp)
         logging.info(f'Extracted coin name: {coin} from {title}')
         return coin
     except Exception as e:
