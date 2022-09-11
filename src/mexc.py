@@ -10,8 +10,7 @@ from coingecko import get_coin_markets
 from text_processing import get_mexc_coin, concat_markets
 from webhook import send_mexc_article_alert, send_mexc_listing_alert
 
-def initialize_articles(url):
-    scraper = cloudscraper.create_scraper(delay=10, browser='chrome')
+def initialize_articles(url, scraper):
     try:
         res = scraper.get(url)
         if res.status_code != 200: return []
@@ -27,8 +26,7 @@ def initialize_articles(url):
         logging.exception('Exception while scraping mexc: ', e)
         return []
 
-def scrape_mexc(url, saved_articles):
-    scraper = cloudscraper.create_scraper(delay=10, browser='chrome')
+def scrape_mexc(url, scraper, saved_articles):
     try:
         res = scraper.get(url)
         if res.status_code != 200: return saved_articles, []
@@ -49,22 +47,23 @@ def scrape_mexc(url, saved_articles):
 
 def mexc():
     initialized = False
+    scraper = cloudscraper.create_scraper(delay=10, browser='chrome')
     listing_url = 'https://support.mexc.com/hc/en-001/sections/360000547811-New-Listings'
     news_url = 'https://support.mexc.com/hc/en-001/sections/360000679912-Latest-News'
-    saved_listings = initialize_articles(listing_url)
-    saved_news = initialize_articles(news_url)
+    saved_listings = initialize_articles(listing_url, scraper)
+    saved_news = initialize_articles(news_url, scraper)
     if len(saved_listings) > 1 and len(saved_news) > 1:
         initialized = True
     sleep(60)
     fetch_count = 0
     while(True):
-        saved_listings, new_articles = scrape_mexc(listing_url, saved_listings)
+        saved_listings, new_articles = scrape_mexc(listing_url, scraper, saved_listings)
         for a in new_articles:
             coin =  get_mexc_coin(a['title'])
             exchanges = concat_markets(get_coin_markets(coin))
             send_mexc_listing_alert(a['title'], a['url'], exchanges)
             logging.info('NEW LISTING ALERT')
-        saved_news, new_articles = scrape_mexc(news_url, saved_news)
+        saved_news, new_articles = scrape_mexc(news_url, scraper, saved_news)
         for a in new_articles:
             send_mexc_article_alert(a['title'], a['url'])
             logging.info('NEWS ALERT')
@@ -72,8 +71,8 @@ def mexc():
         if fetch_count >= 5 or not initialized:
             sleep(30)
             logging.info('Re-initializing existing article list')
-            saved_listings = initialize_articles(listing_url)
-            saved_news = initialize_articles(news_url)
+            saved_listings = initialize_articles(listing_url, scraper)
+            saved_news = initialize_articles(news_url, scraper)
             fetch_count = 0
         if len(saved_listings) > 1 and len(saved_news) > 1:
             initialized = True    
