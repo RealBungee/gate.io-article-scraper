@@ -4,10 +4,12 @@ import pickle
 import sys
 import json
 import os
-from definitions import ROOT_DIR
+#from definitions import ROOT_DIR
 from coingecko import get_all_futures_coins
 from webhook import send_perp_listing_alert, send_perp_delisting_alert
 sys.path.append('../gate.io-article-scraper')
+
+ROOT_DIR = '.'
 
 #used to load the original config file
 def load_scrapeData_file():

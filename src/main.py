@@ -4,7 +4,6 @@ from time import sleep
 from mexc import mexc
 from kucoin import kucoin, start_kucoin_websocket
 from gate import gateio, start_gateio_websocket
-from twitter import twitter
 from storageMethods import update_futures_listings
 
 def check_for_futures_updates():
