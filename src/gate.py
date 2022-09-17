@@ -245,10 +245,15 @@ def process_article(a):
     else:
         send_gateio_article_alert(title, url)
         logging.info('NEW ARTICLE ALERT! Detecting listings in articles...')
+
+def get_latest_article():
+    articles = scrape_article_list(0)
+    latest_article = get_article_number(articles[0]['url'])
+    return latest_article
  
 def gateio():
-    latest_article = load_latest_article()
-    logging.info('Successfully loaded most recent article number')
+    latest_article = get_latest_article()
+    logging.info(f'Successfully loaded most recent article number: {latest_article}')
     while(True):
         new_articles = scrape_article_list(latest_article)
         if len(new_articles) > 0:
