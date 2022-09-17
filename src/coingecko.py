@@ -5,13 +5,6 @@ from requests.exceptions import HTTPError, ConnectionError
 
 cg = CoinGeckoAPI()
 
-# res = get_coin(coin)
-#     if res != '':
-#         coin = { 'name': res['name'], 'id': res['id'], 'market_cap': res['market_cap']['usd']}
-#         coins.append(coin)
-#     if i % 49 == 0:
-#         print('Sleeping...')
-#         sleep(62)
 def get_coins_market_data():
     coins = []
     try:
