@@ -49,6 +49,7 @@ def get_gate_coin(title):
 
 def get_mexc_coin(title):
     try:
+        title_info = title
         title = title.lower()
         if 'listing arrangement' in title:
             tmp = title.split('for')
@@ -84,7 +85,7 @@ def get_mexc_coin(title):
         else:
             tmp = ''
         coin = remove_spaces(tmp)
-        logging.info(f'Extracted coin name: {coin} from {title}')
+        logging.info(f'Extracted coin name: {coin} from {title_info}')
         return coin
     except Exception as e:
         logging.error(f'Error extracting coin from title: \n{e}')
