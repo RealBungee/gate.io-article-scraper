@@ -79,8 +79,8 @@ def mexc():
         if fetch_count >= 120 or not initialized:
             sleep(30)
             logging.warning('Re-initializing existing article list')
-            saved_listings = initialize_articles(listing_url)
-            saved_news = initialize_articles(news_url)
+            saved_listings = initialize_articles(listing_url, scraper)
+            saved_news = initialize_articles(news_url, scraper)
             if len(saved_listings) > 1 and len(saved_news) > 1:
                 initialized = True 
                 fetch_count = 0
