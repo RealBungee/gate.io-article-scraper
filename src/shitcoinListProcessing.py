@@ -1,6 +1,6 @@
 import json
 import coingecko
-from gatePI import get_gateio_listed_coins
+from gateAPI import get_gateio_listed_coins
 from kucoin import get_listed_coins
 
 #first step is to update the list with most recent data and most recent shitcoins from coingecko
