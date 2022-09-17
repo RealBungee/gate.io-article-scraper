@@ -81,7 +81,7 @@ def mexc():
             logging.warning('Re-initializing existing article list')
             saved_listings = initialize_articles(listing_url, scraper)
             saved_news = initialize_articles(news_url, scraper)
-            logging.warning('saved_listings len =  '  + len(saved_listings) + '\nsaved_news  len = ' + len(saved_news))
+            logging.warning('saved_listings len =  '  + str(len(saved_listings)) + '\nsaved_news  len = ' + str(len(saved_news)))
             if len(saved_listings) > 1 and len(saved_news) > 1:
                 logging.info('Mexc articles re-initialized')
                 initialized = True 
