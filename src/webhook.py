@@ -1,3 +1,4 @@
+from random import randint
 from discord_webhook import DiscordWebhook
 
 def send_gateio_listing_alert(article, exchanges):
@@ -57,6 +58,10 @@ def send_gateio_trade_alert(content):
     webhook.execute()
 
 def send_kucoin_trade_alert(content):
-    webhook_url = 'https://discord.com/api/webhooks/1008373350873170041/eUfcLGp6O6zd_LqErImXz5hacdcA0KIiGGva4hBaHPxt1vLlyeDvPLoYLBoRUWwpA9rc'
-    webhook = DiscordWebhook(url = webhook_url, content = content, rate_limit_retry=True)
+    webhook1_url = 'https://discordapp.com/api/webhooks/1018623147068633309/tUcnjgNFWy5eLDoZEQjsn3rwSQpSS2AGuZBXU5IUxk2PGuRbTsiAzioyt_5Oyxx1tdad'
+    webhook2_url = 'https://discord.com/api/webhooks/1008373350873170041/eUfcLGp6O6zd_LqErImXz5hacdcA0KIiGGva4hBaHPxt1vLlyeDvPLoYLBoRUWwpA9rc'
+    i = randint(1, 2)
+    if i == 1: url = webhook1_url
+    else: url = webhook2_url
+    webhook = DiscordWebhook(url = url, content = content, rate_limit_retry=True)
     webhook.execute()

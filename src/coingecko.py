@@ -11,6 +11,17 @@ cg = CoinGeckoAPI()
 #     if i % 49 == 0:
 #         print('Sleeping...')
 #         sleep(62)
+def get_coins_market_data():
+    coins = []
+    try:
+        for i in range(1, 30):
+            print(i)
+            res = cg.get_coins_markets('usd', order = 'market_cap_asc', per_page = 250, page=i)
+            coins += res
+        return coins
+    except (ValueError, HTTPError, ConnectionError, Exception) as err:
+        logging.error(f'Error Fetching Coin Information From Coingecko! \n{err}')
+    return []
 
 def get_listed_coins():
     try:

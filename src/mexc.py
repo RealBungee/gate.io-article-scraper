@@ -10,8 +10,7 @@ from coingecko import get_coin_markets
 from text_processing import get_mexc_coin, concat_markets
 from webhook import send_mexc_article_alert, send_mexc_listing_alert
 
-def initialize_articles(url):
-    scraper = cloudscraper.create_scraper(delay=10, browser='chrome')
+def initialize_articles(url, scraper):
     try:
         res = scraper.get(url)
         if res.status_code != 200: return []
@@ -27,8 +26,7 @@ def initialize_articles(url):
         logging.exception('Exception while scraping mexc: ', e)
         return []
 
-def scrape_mexc(url, saved_articles):
-    scraper = cloudscraper.create_scraper(delay=10, browser='chrome')
+def scrape_mexc(url, scraper, saved_articles):
     try:
         res = scraper.get(url)
         if res.status_code != 200: return []
@@ -48,6 +46,7 @@ def scrape_mexc(url, saved_articles):
 
 def mexc():
     initialized = False
+    scraper = cloudscraper.create_scraper(delay=10, browser='chrome')
     listing_url = 'https://support.mexc.com/hc/en-001/sections/360000547811-New-Listings'
     news_url = 'https://support.mexc.com/hc/en-001/sections/360000679912-Latest-News'
     saved_listings = scrape_mexc(listing_url, [])
