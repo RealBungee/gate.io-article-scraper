@@ -8,37 +8,11 @@ from requests.exceptions import SSLError
 from http.client import RemoteDisconnected
 from xmlrpc.client import ProtocolError
 from time import sleep
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from kucoinWebsocket import KucoinWebSocketApp, on_message, on_open
 from text_processing import get_mexc_coin, concat_markets
 from coingecko import get_coin_markets
 from webhook import send_kucoin_listing_alert
 from webSocketQueue import addTicker
-
-def scrape_listings(link, articles=[], initialized=False):
-    options = webdriver.ChromeOptions()
-    options.add_experimental_option('excludeSwitches', ['enable-logging'])
-    driver = webdriver.Chrome(options=options)
-    driver.get(link)
-    sleep(5)
-
-    try:
-        new_article_list = []
-        listings = []
-        for i in range(1, 11):
-            title = driver.find_element(By.XPATH, f'/html[1]/body[1]/div[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/a[{i}]/div[1]/div[2]/div[1]/span[1]').text
-            if title not in articles and initialized:
-                url = driver.find_element(By.XPATH, f'/html[1]/body[1]/div[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/a[{i}]').get_attribute('href')
-                listings.append({'title': title, 'url': url})
-            new_article_list.append(title)
-        driver.quit()
-        return listings, new_article_list
-    except (NoSuchElementException, WebDriverException, Exception) as ex:
-        logging.exception(f'Error finding article: {ex}')
-        driver.quit()
-        return [], articles
 
 def get_kucoin_announcement():
     """
