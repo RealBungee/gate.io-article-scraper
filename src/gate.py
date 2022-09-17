@@ -167,24 +167,26 @@ def scrape_article(url):
         logging.exception(f'Exception while scraping article {article_number} on gateio: \n{e}')
         return {'title':  '', 'url': '', 'content': ''}
 
+def get_exchanges(title):
+    coin = get_gate_coin(title)
+    markets_list = get_coin_markets(coin)
+    markets = concat_markets(markets_list)
+    return markets
+
 def process_article(a):
     title = a['title']
     url = 'https://www.gate.io' + a['url']
     if 'Sale Result' in title or 'Gate.io Startup Free Offering:' in title or 'Gate.io Startup:' in title or 'Initial Free Offering:' in title or 'Gate.io will list' in title:
         article = scrape_article(url)
-        if not article['title'] == '' and article['content'] == '':
-            try:
+        try:
+            if not article['title'] == '' and article['content'] == '':
                 send_gateio_article_alert(article['title'], ['link'])
-                logging.info('NEW ARTICLE ALERT!')
-            except requests.exceptions.ConnectionError as err:
-                logging.error(f'Error sending an alert: \n{err}')
-        else:
-            exchanges = concat_markets(get_coin_markets(get_gate_coin(article['title'])))
-            try:
+            else:
+                exchanges = get_exchanges(article['title'])
                 send_gateio_listing_alert(article, exchanges)
-                logging.info('NEW LISTING ALERT!')
-            except requests.exceptions.ConnectionError as err:
-                logging.error(f'Error sending an alert: \n{err}')
+        except requests.exceptions.ConnectionError as err:
+            logging.error(f'Error sending an alert: \n{err}')
+        
     else:
         send_gateio_article_alert(title, url)
         logging.info('NEW ARTICLE ALERT! Detecting listings in articles...')
@@ -192,11 +194,11 @@ def process_article(a):
 def get_latest_article():
     articles = scrape_article_list(0)
     latest_article = get_article_number(articles[0]['url'])
+    logging.info(f'Successfully loaded most recent article number: {latest_article}')
     return latest_article
  
 def gateio():
     latest_article = get_latest_article()
-    logging.info(f'Successfully loaded most recent article number: {latest_article}')
     while(True):
         new_articles = scrape_article_list(latest_article)
         if len(new_articles) > 0:

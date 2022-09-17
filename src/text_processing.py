@@ -1,5 +1,16 @@
 import logging
 
+def concat_markets(markets):
+    if markets == '':
+        return 'No markets available'
+
+    if not 'No markets available' in markets:
+        exchanges = '| '
+        for m in markets:
+            exchanges += m + ' | '
+    else:
+        exchanges = markets
+    return exchanges
 
 def get_coin_abbreviation(title):
     if '(' in title:
@@ -89,16 +100,3 @@ def get_mexc_coin(title):
         return coin
     except Exception as e:
         logging.error(f'Error extracting coin from title: \n{e}')
-
-
-def concat_markets(markets):
-    if markets == '':
-        return 'No markets available'
-
-    if not 'No markets available' in markets:
-        exchanges = '| '
-        for m in markets:
-            exchanges += m + ' | '
-    else:
-        exchanges = markets
-    return exchanges
