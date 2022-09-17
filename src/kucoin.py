@@ -80,7 +80,7 @@ def get_listed_coins():
     coins = []
     for c in res['data']:
         if c['quoteCurrency'] == 'USDT':
-            coins.append(c['baseCurrency'])
+            coins.append(c['symbol'])
     return coins
 
 def filter_listed_coins():
@@ -91,7 +91,8 @@ def filter_listed_coins():
     for c in coins:
         ticker = c['symbol'].upper() + '-USDT'
         tickers.append(ticker)
-    return list(filter(lambda x: x in listed_coins, tickers))
+    filtered_tickers = list(filter(lambda x: x in listed_coins, tickers))
+    return filtered_tickers
 
 def prepare_tickers():
     tickers = filter_listed_coins()
@@ -107,7 +108,7 @@ def start_kucoin_websocket():
     res = requests.post('https://api.kucoin.com/api/v1/bullet-public')
     data = json.loads(res.text)
     public_token = data['data']['token']
-    connect_id = 12345
+    connect_id = 123456
     websocket_url = f'wss://ws-api.kucoin.com/endpoint?token={public_token}&[connectId={connect_id}]'
     app = KucoinWebSocketApp(websocket_url,'', '', on_open=on_open, on_message=on_message)
     app.run_forever(ping_interval=5)
