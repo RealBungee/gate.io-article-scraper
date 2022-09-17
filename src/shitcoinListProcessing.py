@@ -1,12 +1,11 @@
 import json
-from types import NoneType
-from coingecko import get_coins_market_data
+import coingecko
 from gatePI import get_gateio_listed_coins
 from kucoin import get_listed_coins
 
 #first step is to update the list with most recent data and most recent shitcoins from coingecko
 def save_coins_market_data():
-    res = get_coins_market_data()
+    res = coingecko.get_coins_market_data()
     with open('./Data/allCoingeckoShitcoins.json', 'w') as file:
         file.write(json.dumps(res))
 
