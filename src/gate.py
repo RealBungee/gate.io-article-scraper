@@ -1,7 +1,5 @@
-import json
 import logging
 import requests
-import coingecko
 from random import randint
 from h11 import ProtocolError
 from bs4 import BeautifulSoup
@@ -12,10 +10,8 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from http.client import RemoteDisconnected
 from gateWebsocket import GateWebSocketApp, on_message, on_open
-from gatePI import get_gateio_listed_coins
-from storageMethods import load_latest_article, save_latest_article
 from text_processing import get_coin_abbreviation, get_gate_coin, concat_markets
-from coingecko import get_coin, get_coin_markets
+from coingecko import get_coin_markets
 from webhook import send_gateio_article_alert, send_gateio_listing_alert
 
 def scrape_gateio_article(article_number):
@@ -72,59 +68,6 @@ def scrape_gateio_article(article_number):
         logging.warning('No title found', err)
         driver.quit()
         return {'title':  '', 'url': '', 'content': ''}
-
-def get_listed_coins():
-    listed_coins = []
-    tickers = get_gateio_listed_coins()
-    coingecko_listed_coins = coingecko.get_listed_coins()
-
-    print('Comparing coins to tickers')
-    for t in tickers:
-        for c in coingecko_listed_coins:
-            symbol = c['symbol'].lower()
-            print(f'{t}:{symbol}')
-            if t.lower() == symbol:
-                listed_coins.append(c) 
-    with open('api_response.txt', 'w') as f:
-        f.write(json.dumps(listed_coins))
-
-def get_coin_market_caps():
-    f = open('api_response.txt')
-    coins = json.load(f)
-    for i, c in enumerate(coins):
-        coin = c['id']
-        res = get_coin(coin)
-        if res != '':
-            try:
-                mc = res['market_data']['market_cap']['usd']
-                c['market_cap'] = mc
-                print(f'Coin: {coin} market cap = {mc}')
-            except KeyError as e:
-                print(f'Error: {e}')
-        if i % 30 == 0 and i != 0:
-            sleep(70)
-    with open('api_response.txt', 'w') as f:
-        f.write(json.dumps(coins))
-
-def filter_coins_by_mc():
-    f = open('api_response.txt')
-    coins = json.load(f)
-    shitcoins = []
-    low_caps = []
-    for i, c in enumerate(coins):
-        try:
-            mc = c['market_cap']
-            if  mc > 0 and mc < 250000000:
-                shitcoins.append(c)
-            if mc > 250000000 and mc < 1100000000:
-                low_caps.append(c)
-        except KeyError as e:
-            print(f'Error: {e}')
-    print(len(shitcoins))
-    with open('./Data/shitcoins.json', 'w') as f:
-        f.write(json.dumps(shitcoins))
-    with open('./Data/lowCaps.json', 'w') as f:
-        f.write(json.dumps(low_caps))
 
 def get_url(url):
     payload = "tags_query=&title_query=&cate_query=lastest"
@@ -258,7 +201,6 @@ def gateio():
         new_articles = scrape_article_list(latest_article)
         if len(new_articles) > 0:
             latest_article = get_article_number(new_articles[0]['url'])
-            save_latest_article([latest_article])
         for a in reversed(new_articles):
             process_article(a)
             if len(new_articles) > 1:

@@ -6,7 +6,6 @@ import hmac
 import json
 import logging
 import time
-
 from websocket import WebSocketApp
 from webhook import send_gateio_trade_alert
 
