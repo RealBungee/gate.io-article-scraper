@@ -29,7 +29,7 @@ def initialize_articles(url, scraper):
 def scrape_mexc(url, scraper, saved_articles):
     try:
         res = scraper.get(url)
-        if res.status_code != 200: return saved_articles, []
+        if res.status_code != 200: return []
 
         html = BeautifulSoup(res.text, 'html.parser')
         items = html.find_all('li', class_='article-list-item article-promoted')
@@ -39,11 +39,10 @@ def scrape_mexc(url, scraper, saved_articles):
             if article not in saved_articles:
                 url = 'https://support.mexc.com/' + i.find('a').get('href')
                 new_articles.append({ 'title': article, 'url': url})
-                saved_articles.append(article) 
-        return saved_articles, new_articles
+        return new_articles
     except (RemoteDisconnected, ConnectionError, ProtocolError, SSLError, Exception) as e:
         logging.exception('Exception while scraping mexc: ', e)
-        return saved_articles, []
+        return []
 
 def mexc():
     initialized = False
@@ -53,29 +52,39 @@ def mexc():
     saved_listings = initialize_articles(listing_url, scraper)
     saved_news = initialize_articles(news_url, scraper)
     if len(saved_listings) > 1 and len(saved_news) > 1:
+        logging.info('Initialized Mexc Listing and News Articles')
         initialized = True
     sleep(60)
     fetch_count = 0
     while(True):
-        saved_listings, new_articles = scrape_mexc(listing_url, scraper, saved_listings)
-        for a in new_articles:
-            coin =  get_mexc_coin(a['title'])
-            exchanges = concat_markets(get_coin_markets(coin))
-            send_mexc_listing_alert(a['title'], a['url'], exchanges)
-            logging.info('NEW LISTING ALERT')
-        saved_news, new_articles = scrape_mexc(news_url, scraper, saved_news)
-        for a in new_articles:
-            send_mexc_article_alert(a['title'], a['url'])
-            logging.info('NEWS ALERT')
-        fetch_count += 1
-        if fetch_count >= 5 or not initialized:
+        if len(saved_listings) < 1 or len(saved_news) < 1: 
+            logging.warning('Released article list is empty...Setting initialized to false')
+            initialized = False
+        
+        if initialized:
+            new_articles = scrape_mexc(listing_url, scraper, saved_listings)
+            for a in new_articles:
+                saved_listings.append(a['title'])
+                coin =  get_mexc_coin(a['title'])
+                exchanges = concat_markets(get_coin_markets(coin))
+                send_mexc_listing_alert(a['title'], a['url'], exchanges)
+                logging.info('NEW LISTING ALERT')
+            
+            new_articles = scrape_mexc(news_url, scraper, saved_news)
+            for a in new_articles:
+                saved_news.append(a['title'])
+                send_mexc_article_alert(a['title'], a['url'])
+                logging.info('NEWS ALERT')
+            fetch_count += 1
+        if fetch_count >= 120 or not initialized:
             sleep(30)
-            logging.info('Re-initializing existing article list')
-            saved_listings = initialize_articles(listing_url, scraper)
-            saved_news = initialize_articles(news_url, scraper)
-            fetch_count = 0
-        if len(saved_listings) > 1 and len(saved_news) > 1:
-            initialized = True    
+            logging.warning('Re-initializing existing article list')
+            saved_listings = initialize_articles(listing_url)
+            saved_news = initialize_articles(news_url)
+            if len(saved_listings) > 1 and len(saved_news) > 1:
+                initialized = True 
+                fetch_count = 0
+           
         sleep(randint(50, 80))
 
 # def load_mexc_articles(link):
