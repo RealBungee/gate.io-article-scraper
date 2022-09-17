@@ -65,8 +65,9 @@ def on_message(ws, message):
     # type: (GateWebSocketApp, str) -> None
     # handle whatever message you received
     message = json.loads(message)
+    #logging.info("message received from server: {}".format(message))
     try:
-        if 'currency_pair' in message['result']:
+        if message['event'] == 'update' and 'currency_pair' in message['result']:
             pair = message['result']['currency_pair']
             amount = float(message['result']['amount'])
             price = float(message['result']['price'])
@@ -90,11 +91,6 @@ def on_open(ws):
     logging.info('websocket connected')
     f = open('./Data/shitcoins.json')
     coins = json.load(f)
-    global ticker
-    global working_endpoints
-    global failed_endpoints
-    working_endpoints = []
-    failed_endpoints =[]
     for c in coins:
         ticker = c['symbol'].upper() + '_USDT'
         ws.subscribe("spot.trades", [ticker], False)
