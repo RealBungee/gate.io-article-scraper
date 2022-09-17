@@ -106,7 +106,7 @@ def get_listed_coins():
     coins = []
     for c in res['data']:
         if c['quoteCurrency'] == 'USDT':
-            coins.append(c['symbol'])
+            coins.append(c['baseCurrency'])
     return coins
 
 def start_kucoin_websocket():

@@ -1,4 +1,5 @@
 import logging
+from time import sleep
 from pycoingecko import CoinGeckoAPI
 from requests.exceptions import HTTPError, ConnectionError
 
@@ -14,10 +15,13 @@ cg = CoinGeckoAPI()
 def get_coins_market_data():
     coins = []
     try:
-        for i in range(1, 30):
-            print(i)
+        for i in range(1, 52):
+            if i == 20 or i == 40:
+                sleep(120)
+            print('Fetching page: ', i)
             res = cg.get_coins_markets('usd', order = 'market_cap_asc', per_page = 250, page=i)
             coins += res
+        print("Success!")
         return coins
     except (ValueError, HTTPError, ConnectionError, Exception) as err:
         logging.error(f'Error Fetching Coin Information From Coingecko! \n{err}')
