@@ -49,10 +49,8 @@ def mexc():
     scraper = cloudscraper.create_scraper(delay=10, browser='chrome')
     listing_url = 'https://support.mexc.com/hc/en-001/sections/360000547811-New-Listings'
     news_url = 'https://support.mexc.com/hc/en-001/sections/360000679912-Latest-News'
-    saved_listings = scrape_mexc(listing_url, [])
-    saved_news = scrape_mexc(news_url, [])
-    print(saved_listings)
-    print(saved_news)
+    saved_listings = initialize_articles(listing_url, scraper)
+    saved_news = initialize_articles(news_url, scraper)
     if len(saved_listings) > 1 and len(saved_news) > 1:
         logging.info('Initialized Mexc Listing and News Articles')
         initialized = True
@@ -64,7 +62,7 @@ def mexc():
             initialized = False
         
         if initialized:
-            new_articles = scrape_mexc(listing_url, saved_listings)
+            new_articles = scrape_mexc(listing_url, scraper, saved_listings)
             for a in new_articles:
                 saved_listings.append(a['title'])
                 coin =  get_mexc_coin(a['title'])
@@ -72,7 +70,7 @@ def mexc():
                 send_mexc_listing_alert(a['title'], a['url'], exchanges)
                 logging.info('NEW LISTING ALERT')
             
-            new_articles = scrape_mexc(news_url, saved_news)
+            new_articles = scrape_mexc(news_url, scraper, saved_news)
             for a in new_articles:
                 saved_news.append(a['title'])
                 send_mexc_article_alert(a['title'], a['url'])
