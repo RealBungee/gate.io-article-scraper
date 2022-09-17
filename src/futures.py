@@ -1,55 +1,17 @@
-import csv
+import os
 import logging
 import pickle
-import sys
-import json
-import os
-#from definitions import ROOT_DIR
+from time import sleep
 from coingecko import get_all_futures_coins
 from webhook import send_perp_listing_alert, send_perp_delisting_alert
-sys.path.append('../gate.io-article-scraper')
 
-ROOT_DIR = '.'
-
-#used to load the original config file
-def load_scrapeData_file():
-    f = open('./Data/coinData.json')
-    data = json.load(f)
-    coin_data = data['config']['scrapeData']
-    print(coin_data)
-    return coin_data
-
-def load_twitter_accounts():
-    f = open('./Data/twitterAccounts.txt')
-    accounts = json.load(f)
-    return accounts
-
-def save_twitter_accounts(accounts):
-    logging.info('Saving twitter account information to a json file')
-    with open('./Data/twitterAccounts.txt', 'w') as file:
-        file.write(json.dumps(accounts))
-
-#save the latest released article number to csv file
-def save_latest_article(article_number):
-    myFile = open('./Data/latest_article.csv', 'w', newline='')
-    with myFile:
-        writer = csv.writer(myFile)
-        writer.writerow(article_number)
-
-#load the last article number scraped
-def load_latest_article():
-    article_num = ''
-    with open('./Data/latest_article.csv', newline='') as myFile:
-        reader = csv.reader(myFile)
-        for row in reader:
-            article_num = row
-    return int(article_num[0])
+ROOT_DIR = './Data/'
 
 # Saves list of tokens on exchange to ./ListingsData
 # e.g save_object(list, "binance_futures")
 def save_object(obj, exchangeName):
     try:
-        with open(ROOT_DIR +"/Data/" + exchangeName + ".pickle", "wb") as f:
+        with open(ROOT_DIR + exchangeName + ".pickle", "wb") as f:
             pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
     except Exception as ex:
         logging.error(f'Error during pickling object (Possibly unsupported): {ex}')
@@ -58,7 +20,7 @@ def save_object(obj, exchangeName):
 # e.g load_object("binance_futures")
 def load_object(filename):
     try:
-        with open(ROOT_DIR +"/Data/"+ filename, "rb") as f:
+        with open(ROOT_DIR + filename, "rb") as f:
             return pickle.load(f)
     except Exception as ex:
         logging.error(f'Error during unpickling object (Possibly unsupported): {ex}')
@@ -67,7 +29,7 @@ def load_object(filename):
 def update_futures_listings():
     try:
         # Create listing file if it doesn't exist
-        if not os.path.isfile(ROOT_DIR + "/Data/futuresListings.pickle"):
+        if not os.path.isfile(ROOT_DIR + "futuresListings.pickle"):
             create_futures_listing_file()
         # load saved exchange data
         exchanges = load_object("futuresListings.pickle")
@@ -108,3 +70,13 @@ def create_futures_listing_file():
         listings.append(get_all_futures_coins(exchange)) 
     
     save_object(listings, "futuresListings")
+
+def check_for_futures_updates():
+    logging.info('Futures thread started')
+    while(True):
+        try:
+            logging.info('Checking for futures updates')
+            update_futures_listings()
+            sleep(60)
+        except TypeError as err:
+            logging.error(f'Error checking for listings: {err}')
