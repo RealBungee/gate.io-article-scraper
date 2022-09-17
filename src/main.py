@@ -16,11 +16,11 @@ def main():
     futures = threading.Thread(target=check_for_futures_updates)
 
     logging.info('Starting threads')
-    #g.start()
-    #k.start()
+    g.start()
+    k.start()
     m.start()
-    #gw.start()
-    #kw.start()
-    #futures.start()
+    gw.start()
+    kw.start()
+    futures.start()
     
 main()

@@ -1,7 +1,6 @@
-from cmath import log
 import logging
-from random import randint
 import cloudscraper
+from random import randint
 from bs4 import BeautifulSoup
 from time import sleep
 from xmlrpc.client import ProtocolError
