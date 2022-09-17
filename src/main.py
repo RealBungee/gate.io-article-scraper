@@ -11,8 +11,8 @@ def main():
     g = threading.Thread(target=gateio)
     m = threading.Thread(target=mexc)
     k = threading.Thread(target=kucoin)
-    gw = threading.Thread(target=start_gateio_websocket)
     kw = threading.Thread(target=start_kucoin_websocket)
+    gw = threading.Thread(target=start_gateio_websocket)
     futures = threading.Thread(target=check_for_futures_updates)
 
     logging.info('Starting threads')

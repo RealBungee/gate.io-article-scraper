@@ -70,6 +70,7 @@ def on_message(ws, message):
     #logging.info("message received from server: {}".format(message))
 
 def on_open(ws):
+    logging.info('Starting kucoin websocket')
     subscribe = '/market/match:JASMY-USDT'
     for _ in range(0, 100):
         ticker = getTicker()

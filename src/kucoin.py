@@ -109,7 +109,7 @@ def get_listed_coins():
             coins.append(c['baseCurrency'])
     return coins
 
-def start_kucoin_websocket():
+def filter_listed_coins():
     listed_coins = get_listed_coins()
     f = open('./Data/shitcoins.json')
     coins = json.load(f)
@@ -117,14 +117,19 @@ def start_kucoin_websocket():
     for c in coins:
         ticker = c['symbol'].upper() + '-USDT'
         tickers.append(ticker)
-    logging.info('Filtering coins')
-    result = list(filter(lambda x: x in listed_coins, tickers))
-    
-    websocket_instance_count = 0
-    for index, ticker in enumerate(result):
+    return list(filter(lambda x: x in listed_coins, tickers))
+
+def prepare_tickers():
+    tickers = filter_listed_coins()
+    instance_count = 0
+    for index, t in enumerate(tickers):
         if index != 0 and index % 100 == 0:
-            websocket_instance_count += 1
-        addTicker(ticker)
+            instance_count += 1
+        addTicker(t)
+    return instance_count
+
+def start_kucoin_websocket():
+    instance_count = prepare_tickers()
     res = requests.post('https://api.kucoin.com/api/v1/bullet-public')
     data = json.loads(res.text)
     public_token = data['data']['token']
