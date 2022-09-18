@@ -4,12 +4,10 @@ import pickle
 import sys
 import json
 import os
-#from definitions import ROOT_DIR
+from time import sleep
 from coingecko import get_all_futures_coins
 from webhook import send_perp_listing_alert, send_perp_delisting_alert
 sys.path.append('../gate.io-article-scraper')
-
-ROOT_DIR = '.'
 
 #used to load the original config file
 def load_scrapeData_file():
@@ -49,7 +47,7 @@ def load_latest_article():
 # e.g save_object(list, "binance_futures")
 def save_object(obj, exchangeName):
     try:
-        with open(ROOT_DIR +"/Data/" + exchangeName + ".pickle", "wb") as f:
+        with open("./Data/" + exchangeName + ".pickle", "wb") as f:
             pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
     except Exception as ex:
         logging.error(f'Error during pickling object (Possibly unsupported): {ex}')
@@ -58,42 +56,51 @@ def save_object(obj, exchangeName):
 # e.g load_object("binance_futures")
 def load_object(filename):
     try:
-        with open(ROOT_DIR +"/Data/"+ filename, "rb") as f:
+        with open("./Data/"+ filename, "rb") as f:
             return pickle.load(f)
     except Exception as ex:
         logging.error(f'Error during unpickling object (Possibly unsupported): {ex}')
 
 # Compares the list of stored token listings to current listings then updates
-def update_futures_listings():
-    try:
-        # Create listing file if it doesn't exist
-        if not os.path.isfile(ROOT_DIR + "/Data/futuresListings.pickle"):
-            create_futures_listing_file()
-        # load saved exchange data
-        exchanges = load_object("futuresListings.pickle")
-        removedListing = 0
-        addedListing = 0
+def get_futures_listings():
+    logging.info('Futures thread started')
+    while(True):
+        try:
+            logging.info('Checking for futures updates')
 
-        # loop through each exchange and check for listings
-        for item in exchanges:
-            currentListings = get_all_futures_coins(item[1])
+            # Create listing file if it doesn't exist
+            if not os.path.isfile("./Data/futuresListings.pickle"):
+                create_futures_listing_file()
 
-            # Compare
-            removedListing = [i for i in currentListings[0][2] if i not in item[2]]
-            addedListing = [i for i in item[2] if i not in currentListings[0][2]]
-            
-            # Check for delist
-            if len(removedListing) > 0:
-                send_perp_delisting_alert(item[0][0], removedListing[0][0], removedListing[0][1])
-                save_object(currentListings, "futuresListings")
-            # Check for listing
-            if len(addedListing) > 0:
-                send_perp_listing_alert(item[0][0], removedListing[0][0], removedListing[0][1])
-                save_object(currentListings, "futuresListings")
-        if ((len(addedListing) + len(removedListing)) == 0):
-            logging.info("No futures listings or delistings found - retrying in 60 seconds")
-    except Exception as ex:
-        logging.exception("Error during listing update:", ex)
+            # load saved exchange data
+            exchanges = load_object("futuresListings.pickle")
+            removedListing = 0
+            addedListing = 0
+
+            # loop through each exchange and check for listings
+            for item in exchanges:
+                currentListings = get_all_futures_coins(item[1])
+
+                # Compare
+                removedListing = [i for i in currentListings[0][2] if i not in item[2]]
+                addedListing = [i for i in item[2] if i not in currentListings[0][2]]
+                
+                # Check for delist
+                if len(removedListing) > 0:
+                    send_perp_delisting_alert(item[0][0], removedListing[0][0], removedListing[0][1])
+                    save_object(currentListings, "futuresListings")
+
+                # Check for listing
+                if len(addedListing) > 0:
+                    send_perp_listing_alert(item[0][0], removedListing[0][0], removedListing[0][1])
+                    save_object(currentListings, "futuresListings")
+            if ((len(addedListing) + len(removedListing)) == 0):
+                logging.info("No futures listings or delistings found - retrying in 60 seconds")
+
+        except Exception as ex:
+            logging.exception("Error during listing update:", ex)
+    
+            sleep(60)
  
 # Create data file from selected exchanges in exchangList array
 def create_futures_listing_file():
