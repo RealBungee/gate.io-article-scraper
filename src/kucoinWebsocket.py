@@ -72,7 +72,9 @@ def on_message(ws, message):
 def on_open(ws):
     logging.info('Starting kucoin websocket')
     subscribe = '/market/match:'
-    for _ in range(0, 100):
+    for i in range(0, 100):
         ticker = getTicker()
-        subscribe += ticker + ','
+        subscribe += ticker
+        if i < 99:
+            subscribe += ','
     ws.subscribe(subscribe)
