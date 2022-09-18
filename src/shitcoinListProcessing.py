@@ -26,16 +26,16 @@ def remove_margin_tokens(list):
     return list
 
 def filter_coins_by_mc(coin_market_data):
+    ignore_ids= ['binance-peg', 'wormhole', 'wrapped']
     shitcoins = []
     low_caps = []
     for c in coin_market_data:
         try:
-            if 'wormhole' not in c['id'] and 'binance-peg' not in c['id'] and 'xrp' not in c['symbol'] and 'wrapped' not in c['id'] and c['symbol'].upper() in listed_coins and c['market_cap'] != None:
+            coin = {'id': c['id'], 'symbol': c['symbol'], 'name': c['name'], 'market_cap': c['market_cap']}
+            if c['id'] not in ignore_ids and 'xrp' not in c['symbol'] and c['symbol'].upper() in listed_coins and c['market_cap'] != None:
                 if  c['market_cap'] < 250000000:
-                    coin = {'id': c['id'], 'symbol': c['symbol'], 'name': c['name'], 'market_cap': c['market_cap']}
                     shitcoins.append(coin)
                 if  c['market_cap'] >= 250000000 and c['market_cap'] < 1500000000:
-                    coin = {'id': c['id'], 'symbol': c['symbol'], 'name': c['name'], 'market_cap': c['market_cap']}
                     low_caps.append(coin)
         except KeyError as e:
             print(f'Error: {e}')
