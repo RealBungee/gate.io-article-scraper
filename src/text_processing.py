@@ -1,15 +1,12 @@
 import logging
 
 def concat_markets(markets):
-    if markets == '':
-        return 'No markets available'
+    if markets == '' or markets == 'No markets available': return 'No markets available'
 
-    if not 'No markets available' in markets:
-        exchanges = '| '
-        for m in markets:
-            exchanges += m + ' | '
-    else:
-        exchanges = markets
+    exchanges = '| '
+    for m in markets:
+        exchanges += m + ' | '
+    
     return exchanges
 
 def get_coin_abbreviation(title):
