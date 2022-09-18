@@ -1,20 +1,9 @@
 import logging
 import threading
-from time import sleep
 from mexc import mexc
 from kucoin import kucoin, start_kucoin_websocket
 from gate import gateio, start_gateio_websocket
-from storageMethods import update_futures_listings
-
-def check_for_futures_updates():
-    logging.info('Futures thread started')
-    while(True):
-        try:
-            logging.info('Checking for futures updates')
-            update_futures_listings()
-            sleep(60)
-        except TypeError as err:
-            logging.error(f'Error checking for listings: {err}')
+from storageMethods import get_futures_listings
 
 def main():
     logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(threadName)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
@@ -23,7 +12,7 @@ def main():
     k = threading.Thread(target=kucoin)
     gw = threading.Thread(target=start_gateio_websocket)
     kw = threading.Thread(target=start_kucoin_websocket)
-    futures = threading.Thread(target=check_for_futures_updates)
+    f = threading.Thread(target=get_futures_listings)
 
     logging.info('Starting threads')
     g.start()
@@ -31,6 +20,6 @@ def main():
     m.start()
     gw.start()
     kw.start()
-    futures.start()
+    f.start()
     
 main()
