@@ -72,15 +72,14 @@ def on_message(ws, message):
             price = float(message['result']['price'])
             side = message['result']['side']
             dollar_amount = round(amount * price, 2)
-            if side == 'buy':
+            if side == 'buy' and dollar_amount > 1000:
                 side = 'bought'
-            else:
-                side = 'sold'
-            if dollar_amount > 2000:
                 content = f'```Someone {side} ${dollar_amount} of {pair} at {price}.```'
                 if dollar_amount > 10000:
                     content += '@everyone'
                 send_gateio_trade_alert(content)
+            # else:
+            #     side = 'sold'
     except Exception as e:
         logging.error(e)
 
