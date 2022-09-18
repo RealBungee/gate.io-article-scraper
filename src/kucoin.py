@@ -77,11 +77,17 @@ def kucoin():
 def get_listed_coins():
     url = 'https://api.kucoin.com/api/v1/symbols'
     res = json.loads(requests.get(url).text)
+    coins = [c['baseCurrency'] for c in res['data'] if c['quoteCurrency'] == 'USDT']
+    return coins
+
+def get_listed_coin_symbols():
+    url = 'https://api.kucoin.com/api/v1/symbols'
+    res = json.loads(requests.get(url).text)
     coins = [c['symbol'] for c in res['data'] if c['quoteCurrency'] == 'USDT']
     return coins
 
 def filter_listed_coins():
-    listed_coins = get_listed_coins()
+    listed_coins = get_listed_coin_symbols()
     f = open('./Data/shitcoins.json')
     coins = json.load(f)
     tickers = [c['symbol'].upper() + '-USDT' for c in coins]

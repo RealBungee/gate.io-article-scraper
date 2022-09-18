@@ -26,13 +26,14 @@ def remove_margin_tokens(list):
     return list
 
 def filter_coins_by_mc(coin_market_data):
-    ignore_ids= ['binance-peg', 'wormhole', 'wrapped']
+    ignored_ids = []
+    ignored_symbols = []
     shitcoins = []
     low_caps = []
     for c in coin_market_data:
         try:
             coin = {'id': c['id'], 'symbol': c['symbol'], 'name': c['name'], 'market_cap': c['market_cap']}
-            if c['id'] not in ignore_ids and 'xrp' not in c['symbol'] and c['symbol'].upper() in listed_coins and c['market_cap'] != None:
+            if 'binance-peg' not in c['id'] and 'wormhole' not in c['id'] and 'wrapped' not in c['id'] and 'jasmy' not in c['symbol'] and 'xrp' not in c['symbol'] and 'undead' not in c['symbol'] and c['symbol'].upper() in listed_coins and c['market_cap'] != None:
                 if  c['market_cap'] < 250000000:
                     shitcoins.append(coin)
                 if  c['market_cap'] >= 250000000 and c['market_cap'] < 1500000000:
@@ -45,6 +46,7 @@ def filter_coins_by_mc(coin_market_data):
         f.write(json.dumps(low_caps))
     return shitcoins, low_caps    
 
+#save_coins_market_data()
 coin_market_data = load_coins_market_data()
 listed_coins = get_all_listed_coins()
 listed_coins = remove_margin_tokens(listed_coins)
