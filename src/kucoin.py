@@ -91,7 +91,7 @@ def filter_listed_coins():
     f = open('./Data/shitcoins.json')
     coins = json.load(f)
     tickers = [c['symbol'].upper() + '-USDT' for c in coins]
-    filtered_tickers = list(filter(lambda x: x in listed_coins, tickers))
+    filtered_tickers = list(filter(lambda x: x in tickers, listed_coins))
     return filtered_tickers
 
 def prepare_tickers():

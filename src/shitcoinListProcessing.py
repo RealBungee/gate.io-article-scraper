@@ -27,7 +27,7 @@ def remove_margin_tokens(list):
 
 def filter_coins_by_mc(coin_market_data):
     ignored_ids = []
-    ignored_symbols = ['jasmy','undead', 'ape', 'xrp', 'waves']
+    ignored_symbols = ['jasmy','undead', 'ape', 'xrp', 'waves', 'ftm']
     shitcoins = []
     low_caps = []
     for c in coin_market_data:
