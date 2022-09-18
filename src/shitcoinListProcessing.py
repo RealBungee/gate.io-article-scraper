@@ -33,7 +33,7 @@ def filter_coins_by_mc(coin_market_data):
     for c in coin_market_data:
         try:
             coin = {'id': c['id'], 'symbol': c['symbol'], 'name': c['name'], 'market_cap': c['market_cap']}
-            if 'binance-peg' not in c['id'] and 'wormhole' not in c['id'] and 'wrapped' not in c['id'] and 'jasmy' not in c['symbol'] and 'xrp' not in c['symbol'] and 'undead' not in c['symbol'] and c['symbol'].upper() in listed_coins and c['market_cap'] != None:
+            if 'peg' not in c['id'] and 'wormhole' not in c['id'] and 'wrapped' not in c['id'] and 'jasmy' not in c['symbol'] and 'xrp' not in c['symbol'] and 'undead' not in c['symbol'] and c['symbol'].upper() in listed_coins and c['market_cap'] != None:
                 if  c['market_cap'] < 250000000:
                     shitcoins.append(coin)
                 if  c['market_cap'] >= 250000000 and c['market_cap'] < 1500000000:
