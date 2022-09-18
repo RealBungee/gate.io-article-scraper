@@ -71,9 +71,8 @@ def on_message(ws, message):
 
 def on_open(ws):
     logging.info('Starting kucoin websocket')
-    subscribe = '/market/match:JASMY-USDT'
+    subscribe = '/market/match:'
     for _ in range(0, 100):
         ticker = getTicker()
-        subscribe += ',' + ticker
+        subscribe += ticker + ','
     ws.subscribe(subscribe)
-    #ws.subscribe('/market/match:JASMY-USDT,AGLD-USDT,SOL-USDT,SHIB-USDT')
