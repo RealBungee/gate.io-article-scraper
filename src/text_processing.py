@@ -1,5 +1,13 @@
 import logging
 
+def concat_markets(markets):
+    if markets == '' or markets == 'No markets available': return 'No markets available'
+
+    exchanges = '| '
+    for m in markets:
+        exchanges += m + ' | '
+    
+    return exchanges
 
 def get_coin_abbreviation(title):
     if '(' in title:
@@ -34,14 +42,12 @@ def get_gate_coin(title):
             tmp = title.split(':')
             tmp = tmp[1].split('(')
             tmp = tmp[0]
-            title = ''
-        if '(' in title:
+        elif '(' in title:
             tmp = title.split('will list ')
             tmp = tmp[1].split('(')
             tmp = tmp[0]
-            title = ''
         coin = remove_spaces(tmp)
-        logging.info(f'Extracted coin name: {coin} from title...')
+        logging.info(f'Extracted coin name: {coin} from title: {title}')
         return coin
     except Exception as e:
         logging.error(f'Error extracting coin name from title: \n{e}')
@@ -49,14 +55,12 @@ def get_gate_coin(title):
 
 def get_mexc_coin(title):
     try:
-        title_info = title
         title = title.lower()
         if 'listing arrangement' in title:
             tmp = title.split('for')
             tmp = tmp[1].split('(')
             tmp = tmp[0]
-            title = ''
-        if '(' in title:
+        elif '(' in title:
             if 'new m-day' in title:
                 tmp = title.split('new m-day')
                 tmp = tmp[1].split('(')
@@ -77,7 +81,6 @@ def get_mexc_coin(title):
                 tmp = title.split('will list')
                 tmp = tmp[1].split('(')
                 tmp = tmp[0]
-            title = ''
         elif '-' in title:
             tmp = title.split('-')
             tmp = tmp[1].split('in the')
@@ -85,20 +88,7 @@ def get_mexc_coin(title):
         else:
             tmp = ''
         coin = remove_spaces(tmp)
-        logging.info(f'Extracted coin name: {coin} from {title_info}')
+        logging.warning(f'Extracted coin name: {coin} from {title}')
         return coin
     except Exception as e:
         logging.error(f'Error extracting coin from title: \n{e}')
-
-
-def concat_markets(markets):
-    if markets == '':
-        return 'No markets available'
-
-    if not 'No markets available' in markets:
-        exchanges = '| '
-        for m in markets:
-            exchanges += m + ' | '
-    else:
-        exchanges = markets
-    return exchanges
