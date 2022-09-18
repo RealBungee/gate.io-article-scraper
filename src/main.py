@@ -18,7 +18,7 @@ def main():
     logging.info('Starting threads')
     g.start()
     k.start()
-    m.start()
+    #m.start()
     gw.start()
     kw.start()
     futures.start()
