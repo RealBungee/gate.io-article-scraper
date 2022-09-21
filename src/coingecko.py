@@ -6,13 +6,6 @@ from requests.exceptions import HTTPError, ConnectionError
 
 cg = CoinGeckoAPI()
 
-# res = get_coin(coin)
-#     if res != '':
-#         coin = { 'name': res['name'], 'id': res['id'], 'market_cap': res['market_cap']['usd']}
-#         coins.append(coin)
-#     if i % 49 == 0:
-#         print('Sleeping...')
-#         sleep(62)
 def get_coins_market_data():
     coins = []
     try:
@@ -45,18 +38,14 @@ def get_coin(coin):
     return ''
 
 def get_coin_markets(coin):
-    if coin == '':
-        return 'No markets available'
+    if coin == '': return 'No markets available'
     try:
         res = cg.get_coin_by_id(id=coin, community_data = 'false', tickers = 'true', developer_data = 'false', sparkline = 'false', market_data = 'false', localization = 'false')
     except (ValueError, HTTPError, ConnectionError, Exception) as err:
         logging.error(f'Error Fetching Coin Information From Coingecko! \n{err}')
         return 'No markets available'
-    tickers = []
-    for t in res['tickers']:
-        if not(t['market']['name'] in tickers):
-            tickers.append(t['market']['name'])
-    return tickers
+    #returns a set of exchanges where the coin is listed
+    return {t['market']['name'] for t in res['tickers']}
 
 # Gets the ticker and url to all futures tokens on the inputted exchange
 # e.g get_all_futures_coins("binance_futures")

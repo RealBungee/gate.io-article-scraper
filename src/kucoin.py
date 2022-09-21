@@ -8,37 +8,11 @@ from requests.exceptions import SSLError
 from http.client import RemoteDisconnected
 from xmlrpc.client import ProtocolError
 from time import sleep
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from kucoinWebsocket import KucoinWebSocketApp, on_message, on_open
 from text_processing import get_mexc_coin, concat_markets
 from coingecko import get_coin_markets
 from webhook import send_kucoin_listing_alert
 from webSocketQueue import addTicker
-
-def scrape_listings(link, articles=[], initialized=False):
-    options = webdriver.ChromeOptions()
-    options.add_experimental_option('excludeSwitches', ['enable-logging'])
-    driver = webdriver.Chrome(options=options)
-    driver.get(link)
-    sleep(5)
-
-    try:
-        new_article_list = []
-        listings = []
-        for i in range(1, 11):
-            title = driver.find_element(By.XPATH, f'/html[1]/body[1]/div[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/a[{i}]/div[1]/div[2]/div[1]/span[1]').text
-            if title not in articles and initialized:
-                url = driver.find_element(By.XPATH, f'/html[1]/body[1]/div[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]/a[{i}]').get_attribute('href')
-                listings.append({'title': title, 'url': url})
-            new_article_list.append(title)
-        driver.quit()
-        return listings, new_article_list
-    except (NoSuchElementException, WebDriverException, Exception) as ex:
-        logging.exception(f'Error finding article: {ex}')
-        driver.quit()
-        return [], articles
 
 def get_kucoin_announcement():
     """
@@ -103,32 +77,38 @@ def kucoin():
 def get_listed_coins():
     url = 'https://api.kucoin.com/api/v1/symbols'
     res = json.loads(requests.get(url).text)
-    coins = []
-    for c in res['data']:
-        if c['quoteCurrency'] == 'USDT':
-            coins.append(c['baseCurrency'])
+    coins = [c['baseCurrency'] for c in res['data'] if c['quoteCurrency'] == 'USDT']
     return coins
 
-def start_kucoin_websocket():
-    listed_coins = get_listed_coins()
+def get_listed_coin_symbols():
+    url = 'https://api.kucoin.com/api/v1/symbols'
+    res = json.loads(requests.get(url).text)
+    coins = [c['symbol'] for c in res['data'] if c['quoteCurrency'] == 'USDT']
+    return coins
+
+def filter_listed_coins():
+    listed_coins = get_listed_coin_symbols()
     f = open('./Data/shitcoins.json')
     coins = json.load(f)
-    tickers = []
-    for c in coins:
-        ticker = c['symbol'].upper() + '-USDT'
-        tickers.append(ticker)
-    logging.info('Filtering coins')
-    result = list(filter(lambda x: x in listed_coins, tickers))
-    
-    websocket_instance_count = 0
-    for index, ticker in enumerate(result):
+    tickers = [c['symbol'].upper() + '-USDT' for c in coins]
+    filtered_tickers = list(filter(lambda x: x in tickers, listed_coins))
+    return filtered_tickers
+
+def prepare_tickers():
+    tickers = filter_listed_coins()
+    instance_count = 0
+    for index, t in enumerate(tickers):
         if index != 0 and index % 100 == 0:
-            websocket_instance_count += 1
-        addTicker(ticker)
+            instance_count += 1
+        addTicker(t)
+    return instance_count
+
+def start_kucoin_websocket():
+    instance_count = prepare_tickers()
     res = requests.post('https://api.kucoin.com/api/v1/bullet-public')
     data = json.loads(res.text)
     public_token = data['data']['token']
-    connect_id = 12345
+    connect_id = 123456
     websocket_url = f'wss://ws-api.kucoin.com/endpoint?token={public_token}&[connectId={connect_id}]'
     app = KucoinWebSocketApp(websocket_url,'', '', on_open=on_open, on_message=on_message)
     app.run_forever(ping_interval=5)

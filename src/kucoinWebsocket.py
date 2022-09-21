@@ -56,23 +56,25 @@ def on_message(ws, message):
             price = float(message['data']['price'])
             side = message['data']['side']
             dollar_amount = round(amount * price, 2)
-            if side == 'buy':
+            if side == 'buy' and dollar_amount > 1000:
                 side = 'bought'
-            else:
-                side = 'sold'
-            if dollar_amount > 1000:
                 content = f'```Someone {side} ${dollar_amount} of {pair} at {price}.```'
                 if dollar_amount > 10000:
                     content += '@everyone'
                 send_kucoin_trade_alert(content)
+            # else:
+            #     side = 'sold'
+            
     except Exception as e:
         logging.error(e)
-    #logging.info("message received from server: {}".format(message))
+    logging.info("message received from server: {}".format(message))
 
 def on_open(ws):
-    subscribe = '/market/match:JASMY-USDT'
-    for _ in range(0, 100):
+    logging.info('Starting kucoin websocket')
+    subscribe = '/market/match:'
+    for i in range(0, 100):
         ticker = getTicker()
-        subscribe += ',' + ticker
+        subscribe += ticker
+        if i < 99:
+            subscribe += ','
     ws.subscribe(subscribe)
-    #ws.subscribe('/market/match:JASMY-USDT,AGLD-USDT,SOL-USDT,SHIB-USDT')

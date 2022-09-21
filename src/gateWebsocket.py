@@ -6,7 +6,6 @@ import hmac
 import json
 import logging
 import time
-
 from websocket import WebSocketApp
 from webhook import send_gateio_trade_alert
 
@@ -65,22 +64,22 @@ def on_message(ws, message):
     # type: (GateWebSocketApp, str) -> None
     # handle whatever message you received
     message = json.loads(message)
+    #logging.info("message received from server: {}".format(message))
     try:
-        if 'currency_pair' in message['result']:
+        if message['event'] == 'update' and 'currency_pair' in message['result']:
             pair = message['result']['currency_pair']
             amount = float(message['result']['amount'])
             price = float(message['result']['price'])
             side = message['result']['side']
             dollar_amount = round(amount * price, 2)
-            if side == 'buy':
+            if side == 'buy' and dollar_amount > 1000:
                 side = 'bought'
-            else:
-                side = 'sold'
-            if dollar_amount > 2000:
                 content = f'```Someone {side} ${dollar_amount} of {pair} at {price}.```'
                 if dollar_amount > 10000:
                     content += '@everyone'
                 send_gateio_trade_alert(content)
+            # else:
+            #     side = 'sold'
     except Exception as e:
         logging.error(e)
 
@@ -90,11 +89,6 @@ def on_open(ws):
     logging.info('websocket connected')
     f = open('./Data/shitcoins.json')
     coins = json.load(f)
-    global ticker
-    global working_endpoints
-    global failed_endpoints
-    working_endpoints = []
-    failed_endpoints =[]
     for c in coins:
         ticker = c['symbol'].upper() + '_USDT'
         ws.subscribe("spot.trades", [ticker], False)

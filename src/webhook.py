@@ -63,5 +63,5 @@ def send_kucoin_trade_alert(content):
     i = randint(1, 2)
     if i == 1: url = webhook1_url
     else: url = webhook2_url
-    webhook = DiscordWebhook(url = url, content = content, rate_limit_retry=True)
+    webhook = DiscordWebhook(url = url, content = content, rate_limit_retry=False)
     webhook.execute()
