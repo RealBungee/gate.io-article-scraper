@@ -1,4 +1,5 @@
 import logging
+import json
 from time import sleep
 from pycoingecko import CoinGeckoAPI
 from requests.exceptions import HTTPError, ConnectionError
@@ -65,10 +66,11 @@ def get_all_futures_coins(exchange):
     except (ValueError, HTTPError) as err:
         logging.error(f'Error Fetching Coin Futures Information From Coingecko! \n{err}')
         return 'No markets available'
+
     exchangeTokens = []
     tickers = []
     for t in res['tickers']:
-        tickers.append([t['trade_url'], t['symbol']])
-    exchangeTokens.append([res['name'], exchange, tickers])
+        tickers.append({'trade_url':t['trade_url'], 'symbol':t['symbol']})
+    exchangeTokens.append({'name':res['name'], 'exchange':exchange, 'tickers':tickers})
 
     return exchangeTokens
