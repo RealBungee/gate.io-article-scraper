@@ -23,8 +23,8 @@ def load_list(listName):
 def get_listed_tokens():
     url = 'https://api.mexc.com/api/v3/exchangeInfo'
     res = requests.get(url = url).json().get('symbols')
-    return res  
-    
+    return res
+
 def filter_list_to_usdt_pairs(coin_list):
     list_of_substrings = ['2L', '2S', '3S', '3L', '4L', '4S', '5L', '5S']
     coin_list = list(filter(lambda coin: coin['quoteAsset']=='USDT', coin_list))
@@ -42,7 +42,7 @@ def notify_new_listings(new_coins):
 
 def mexc_listings():
     #initialize the pair list
-    listed_coins = get_listed_tokens()
+    listed_coins = filter_list_to_usdt_pairs(get_listed_tokens())
     #start an infinite loop to detect any new coin additions
     while(True):
         new_list = filter_list_to_usdt_pairs(get_listed_tokens())
