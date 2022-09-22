@@ -1,5 +1,6 @@
 import json
 import logging
+from webbrowser import get
 import requests
 from time import sleep
 from random import randint
@@ -23,7 +24,7 @@ def load_list(listName):
 def get_listed_tokens():
     url = 'https://api.mexc.com/api/v3/exchangeInfo'
     res = requests.get(url = url).json().get('symbols')
-    return res
+    return filter_list_to_usdt_pairs(res)
 
 def filter_list_to_usdt_pairs(coin_list):
     list_of_substrings = ['2L', '2S', '3S', '3L', '4L', '4S', '5L', '5S']
@@ -33,19 +34,19 @@ def filter_list_to_usdt_pairs(coin_list):
     return filtered_coins 
 
 def notify_new_listings(new_coins):
-    logging.warning("New coin listing detected...Coins: " + new_coins)
     base_url = "https://www.mexc.com/exchange/"
     for coin in new_coins:
         symbol = coin.replace('USDT', '') + '_USDT'
         url = base_url + symbol
         send_mexc_beta_listing_alert(f'New Coin Listing: {coin}\n{url}')
+        logging.warning("New coin listing detected")
 
 def mexc_listings():
     #initialize the pair list
-    listed_coins = filter_list_to_usdt_pairs(get_listed_tokens())
+    listed_coins = get_listed_tokens()
     #start an infinite loop to detect any new coin additions
     while(True):
-        new_list = filter_list_to_usdt_pairs(get_listed_tokens())
+        new_list = get_listed_tokens()
         new_coins = [x for x in new_list if x not in listed_coins]
         listed_coins += new_coins
         notify_new_listings(new_coins)
