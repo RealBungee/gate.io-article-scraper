@@ -29,6 +29,6 @@ async def main():
     kw.start()
     f.start()
     
-#asyncio.run(main())
-main()
+asyncio.run(main())
+#main()
 
