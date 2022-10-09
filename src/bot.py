@@ -18,15 +18,11 @@ async def on_ready():
         f'{guild.name}(id: {guild.id})'
     )
 
-async def send_message():
-    channel = client.get_channel(1006153987629789216)
-    await channel.send("msg")
+async def send_message(message):
+    channel = client.get_channel(1008802973553537134)
+    await channel.send(message)
 
-async def run_bot():
-    try:
-        await client.start(TOKEN)
-    except Exception as e:
-        await client.close()
-
-def start_discord_bot():
-    asyncio.run(run_bot())
+def run_bot(loop):
+    asyncio.set_event_loop(loop)
+    loop.run_forever(client.run(TOKEN))
+    
