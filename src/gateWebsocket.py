@@ -81,7 +81,7 @@ def on_message(ws, message):
             # else:
             #     side = 'sold'
     except Exception as e:
-        logging.error(e)
+        logging.warning(e)
 
 def on_open(ws):
     # type: (GateWebSocketApp) -> None

@@ -7,6 +7,7 @@ import json
 import logging
 import time
 from websocket import WebSocketApp
+#from bot import send_message
 from webhook import send_kucoin_trade_alert
 from webSocketQueue import getTicker
 
@@ -62,11 +63,12 @@ def on_message(ws, message):
                 if dollar_amount > 10000:
                     content += '@everyone'
                 send_kucoin_trade_alert(content)
+                #send_message(content)
             # else:
             #     side = 'sold'
             
     except Exception as e:
-        logging.error(e)
+        logging.warning(e)
     logging.info("message received from server: {}".format(message))
 
 def on_open(ws):
