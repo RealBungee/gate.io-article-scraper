@@ -23,14 +23,22 @@ def load_list(listName):
 
 def filter_list_to_usdt_pairs(coin_list):
     list_of_substrings = ['2L', '2S', '3S', '3L', '4L', '4S', '5L', '5S']
-    coin_list = list(filter(lambda coin: coin['quoteAsset']=='USDT', coin_list))
-    coins = [coin['symbol'] for coin in coin_list]
-    filtered_coins = list(filter(lambda coin: not any(substring in coin for substring in list_of_substrings), coins))
-    return filtered_coins 
+    if coin_list == None: return []
+    try:
+        coin_list = list(filter(lambda coin: coin['quoteAsset']=='USDT', coin_list))
+        coins = [coin['symbol'] for coin in coin_list]
+        filtered_coins = list(filter(lambda coin: not any(substring in coin for substring in list_of_substrings), coins))
+        return filtered_coins 
+    except Exception as e:
+        logging.exception(e)
+        return []
 
 def get_listed_tokens():
     url = 'https://api.mexc.com/api/v3/exchangeInfo'
-    res = requests.get(url = url).json().get('symbols')
+    try:
+        res = requests.get(url = url).json().get('symbols')
+    except (requests.ConnectionError, Exception) as e:
+        logging.exception(f'Exception while getting symbols from Mexc: {e}')
     return filter_list_to_usdt_pairs(res)
 
 def notify_new_listings(new_coins):
